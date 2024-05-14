@@ -7,3 +7,6 @@
 [submodule "models/saga"]
 	path = models/saga
 	url = https://github.com/segment3d-app/SegAnyGAussians.git
+[submodule "models/colmap"]
+	path = models/colmap
+	url = https://github.com/segment3d-app/colmap.git
