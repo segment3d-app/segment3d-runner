@@ -4,3 +4,6 @@
 [submodule "models/pointcept"]
 	path = models/pointcept
 	url = https://github.com/segment3d-app/Pointcept.git
+[submodule "models/saga"]
+	path = models/saga
+	url = https://github.com/segment3d-app/SegAnyGAussians.git
