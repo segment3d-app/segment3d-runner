@@ -4,7 +4,7 @@ cd ../models/colmap
 
 echo "colmap: [1/3] installing dependencies..."
 
-sudo apt-get -qq install \
+apt-get -qq install \
   git \
   cmake \
   ninja-build \
@@ -33,8 +33,7 @@ cd build
 
 cmake .. -GNinja
 ninja
-
-sudo ninja install
+ninja install
 
 echo "colmap: [3/3] configuring build..."
 
