@@ -17,3 +17,13 @@ Make sure to run the following commands below inside a Kubernetes pod, to ensure
 ```bash
 kubectl apply -f pod.yaml
 ```
+
+## Configure the models
+
+Each models used in the pipeline have their own requirements and configurations. Setup scripts are provided to initialize the models, which can be accessed in the `/setups` folder. To setup all models, follow this step:
+
+```bash
+cd setups
+chmod +x setup.sh
+bash setup.sh
+```
