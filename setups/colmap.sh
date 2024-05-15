@@ -4,6 +4,7 @@ cd ../models/colmap
 
 echo "colmap: [1/3] installing dependencies..."
 
+apt-get -qq update
 apt-get -qq install \
   git \
   cmake \
