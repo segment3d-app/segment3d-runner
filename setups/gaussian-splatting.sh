@@ -1,5 +1,6 @@
 #!/bin/bash
 
+set -e
 cd ../models/gaussian-splatting
 
 echo "gaussian-splatting: [1/1] initializing environment..."

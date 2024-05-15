@@ -1,5 +1,6 @@
 #!/bin/bash
 
+set -e
 cd ../models/pointcept
 
 echo "pointcept: [1/3] installing dependencies..."

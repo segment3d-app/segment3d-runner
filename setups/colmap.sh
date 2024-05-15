@@ -1,5 +1,6 @@
 #!/bin/bash
 
+set -e
 cd ../models/colmap
 
 echo "colmap: [1/3] installing dependencies..."

@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 chmod +x colmap.sh
 bash colmap.sh
