@@ -16,6 +16,14 @@ Make sure to run the following commands below inside a Kubernetes pod, to ensure
 
 ```bash
 kubectl apply -f pod.yaml
+kubectl exec -it segment3d-pod -- /bin/bash
+```
+
+Before running the model setups, initialize environment:
+
+```bash
+conda init
+export DEBIAN_FRONTEND=noninteractive
 ```
 
 ## Configure the models
