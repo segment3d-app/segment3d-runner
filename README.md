@@ -35,3 +35,25 @@ cd setups
 chmod +x setup.sh
 bash setup.sh
 ```
+
+## Install dependencies
+
+Before running the main script, install the required Python dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+## Running main script
+
+To run the main script, you can run it directly:
+
+```bash
+python ./src/main.py
+```
+
+Or run in the background with nohup:
+
+```bash
+nohup python ./src/main.py &
+```
