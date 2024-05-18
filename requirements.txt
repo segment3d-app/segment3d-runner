@@ -1,0 +1,7 @@
+aio-pika==9.4.1
+aiormq==6.8.0
+idna==3.7
+multidict==6.0.5
+pamqp==3.3.0
+python-dotenv==1.0.1
+yarl==1.9.4
