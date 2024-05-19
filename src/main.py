@@ -14,32 +14,34 @@ from aio_pika.abc import AbstractIncomingMessage
 
 async def task(message: AbstractIncomingMessage):
     logging.info("Received message: %s", message.body)
-    data = json.loads(message.body.decode())
-
-    asset_id = data["asset_id"]
-    asset_path = parse.quote(data["photo_dir_url"])
-    asset_url = f"{storage_root}{asset_path}"
 
     try:
+        data = json.loads(message.body.decode())
+
+        asset_id = data["asset_id"]
+        asset_path = parse.quote(data["photo_dir_url"])
+        asset_url = f"{storage_root}{asset_path}"
+
         zip_path = os.path.join("assets", f"{asset_id}.zip")
         dir_path = os.path.join("assets", f"{asset_id}/input")
         os.makedirs(dir_path, exist_ok=True)
 
+        logging.info(f"Downloading asset {asset_id}...")
         await asyncio.get_event_loop().run_in_executor(
             None, download, asset_url, zip_path
         )
+
+        logging.info(f"Extracting asset {asset_id}...")
         await asyncio.get_event_loop().run_in_executor(None, unzip, zip_path, dir_path)
 
-        logging.info(
-            f"Photos for asset {asset_id} downloaded and extracted successfully!"
-        )
-
+        logging.info(f"Generating 3D gaussian splatting for asset {asset_id}...")
         await asyncio.get_event_loop().run_in_executor(
             None, generate_gaussian_splatting, asset_id
         )
 
     except Exception as e:
-        logging.error(f"Error processing asset {asset_id}: {str(e)}")
+        logging.error(f"Error processing asset {asset_id}:")
+        logging.error(str(e))
 
     # await message.ack()
 
@@ -74,12 +76,8 @@ def generate_gaussian_splatting(asset_id: str):
         capture_output=True,
     )
 
-    if process.returncode == 0:
-        logging.info("Gaussian Splatting completed successfully!")
-        logging.info(process.stdout)
-
-    else:
-        logging.error("Gaussian Splatting failed:")
+    if process.returncode != 0:
+        logging.error("Error generating gaussian splatting:")
         logging.error(process.stderr)
 
 
