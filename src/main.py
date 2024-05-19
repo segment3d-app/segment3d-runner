@@ -61,14 +61,14 @@ def unzip(source: str, destination: str):
 
 
 def generate_gaussian_splatting(asset_id: str):
-    conda_setup_script = "/opt/conda/etc/profile.d/conda.sh"
     convert_command = (
         f"python ./models/gaussian-splatting/convert.py -s ./assets/{asset_id}"
     )
-    train_command = (
-        f"python ./models/gaussian-splatting/train.py -s ./assets/{asset_id}"
-    )
 
+    output_path = os.path.join("assets", f"{asset_id}/output")
+    train_command = f"python ./models/gaussian-splatting/train.py -s ./assets/{asset_id} --model_path {output_path}"
+
+    conda_setup_script = "/opt/conda/etc/profile.d/conda.sh"
     process = subprocess.run(
         f"""
         bash -c "source {conda_setup_script} && conda activate gaussian_splatting && {convert_command} && {train_command} && conda deactivate"
