@@ -2,6 +2,7 @@ import asyncio
 import json
 import logging
 import os
+import subprocess
 import zipfile
 
 from urllib import parse, request
@@ -21,7 +22,7 @@ async def task(message: AbstractIncomingMessage):
 
     try:
         zip_path = os.path.join("assets", f"{asset_id}.zip")
-        dir_path = os.path.join("assets", asset_id)
+        dir_path = os.path.join("assets", f"{asset_id}/input")
         os.makedirs(dir_path, exist_ok=True)
 
         await asyncio.get_event_loop().run_in_executor(
@@ -31,6 +32,10 @@ async def task(message: AbstractIncomingMessage):
 
         logging.info(
             f"Photos for asset {asset_id} downloaded and extracted successfully!"
+        )
+
+        await asyncio.get_event_loop().run_in_executor(
+            None, generate_gaussian_splatting, asset_id
         )
 
     except Exception as e:
@@ -47,6 +52,28 @@ def unzip(source: str, destination: str):
     with zipfile.ZipFile(source, "r") as zip_ref:
         zip_ref.extractall(destination)
     os.remove(source)
+
+
+def generate_gaussian_splatting(asset_id: str):
+    # convert_command = f"python ./models/gaussian-splatting/convert.py -s ./assets/{asset_id}"
+    # train_command = f"python ./models/gaussian-splatting/train.py -s ./assets/{asset_id}"
+
+    process = subprocess.run(
+        f"""
+        bash -c "source activate gaussian_splatting && python ./models/gaussian-splatting/convert.py -s ./assets/{asset_id} && conda deactivate"
+        """,
+        text=True,
+        shell=True,
+        capture_output=True,
+    )
+
+    if process.returncode == 0:
+        logging.info("Gaussian Splatting completed successfully!")
+        logging.info(process.stdout)
+
+    else:
+        logging.error("Gaussian Splatting failed:")
+        logging.error(process.stderr)
 
 
 async def main():
