@@ -30,9 +30,11 @@ async def task(message: AbstractIncomingMessage):
         await asyncio.get_event_loop().run_in_executor(
             None, download, asset_url, zip_path
         )
+        logging.info(f"Asset downloaded successfully!")
 
         logging.info(f"Extracting asset {asset_id}...")
         await asyncio.get_event_loop().run_in_executor(None, unzip, zip_path, dir_path)
+        logging.info(f"Asset extracted successfully!")
 
         logging.info(f"Generating 3D gaussian splatting for asset {asset_id}...")
         await asyncio.get_event_loop().run_in_executor(
@@ -76,7 +78,10 @@ def generate_gaussian_splatting(asset_id: str):
         capture_output=True,
     )
 
-    if process.returncode != 0:
+    if process.returncode == 0:
+        logging.info("Gaussian splatting generated successfully!")
+        logging.info(process.stdout)
+    else:
         logging.error("Error generating gaussian splatting:")
         logging.error(process.stderr)
 
