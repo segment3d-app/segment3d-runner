@@ -71,7 +71,7 @@ def generate_gaussian_splatting(asset_id: str):
 
     process = subprocess.run(
         f"""
-        bash -c "source activate gaussian_splatting && {convert_command} && {train_command} && conda deactivate"
+        bash -c "conda activate gaussian_splatting && {convert_command} && {train_command} && conda deactivate"
         """,
         text=True,
         shell=True,
