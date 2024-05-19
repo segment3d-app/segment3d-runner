@@ -19,14 +19,14 @@ kubectl apply -f pod.yaml
 kubectl exec -it segment3d-pod -- /bin/bash
 ```
 
+## Configure the models
+
 Before running the model setups, initialize environment:
 
 ```bash
 conda init
 export DEBIAN_FRONTEND=noninteractive
 ```
-
-## Configure the models
 
 Each models used in the pipeline have their own requirements and configurations. Setup scripts are provided to initialize the models, which can be accessed in the `/setups` folder. To setup all models, follow this step:
 
@@ -45,6 +45,12 @@ pip install -r requirements.txt
 ```
 
 ## Running main script
+
+Update the access control of the main script to be runnable:
+
+```bash
+chmod u+x ./src/main.py
+```
 
 To run the main script, you can run it directly:
 
