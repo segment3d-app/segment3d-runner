@@ -41,6 +41,8 @@ async def task(message: AbstractIncomingMessage):
     except Exception as e:
         logging.error(f"Error processing asset {asset_id}: {str(e)}")
 
+    # await message.ack()
+
 
 def download(source: str, destination: str):
     response = request.urlopen(source)
@@ -55,12 +57,17 @@ def unzip(source: str, destination: str):
 
 
 def generate_gaussian_splatting(asset_id: str):
-    # convert_command = f"python ./models/gaussian-splatting/convert.py -s ./assets/{asset_id}"
-    # train_command = f"python ./models/gaussian-splatting/train.py -s ./assets/{asset_id}"
+    convert_command = (
+        f"python ./models/gaussian-splatting/convert.py -s ./assets/{asset_id}"
+    )
+
+    train_command = (
+        f"python ./models/gaussian-splatting/train.py -s ./assets/{asset_id}"
+    )
 
     process = subprocess.run(
         f"""
-        bash -c "source activate gaussian_splatting && python ./models/gaussian-splatting/convert.py -s ./assets/{asset_id} && conda deactivate"
+        bash -c "source activate gaussian_splatting && {convert_command} && {train_command} && conda deactivate"
         """,
         text=True,
         shell=True,
