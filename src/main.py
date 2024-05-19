@@ -1,7 +1,10 @@
 import asyncio
+import json
 import logging
 import os
+import zipfile
 
+from urllib import parse, request
 from dotenv import load_dotenv
 
 from aio_pika import connect_robust
@@ -10,12 +13,40 @@ from aio_pika.abc import AbstractIncomingMessage
 
 async def task(message: AbstractIncomingMessage):
     logging.info("Received message: %s", message.body)
-    logging.info("Running tasks...")
+    data = json.loads(message.body.decode())
 
-    await asyncio.sleep(10)
-    logging.info("Tasks run successfuly!")
+    asset_id = data["asset_id"]
+    asset_path = parse.quote(data["photo_dir_url"])
+    asset_url = f"{storage_root}{asset_path}"
 
-    await message.ack()
+    try:
+        zip_path = os.path.join("assets", f"{asset_id}.zip")
+        dir_path = os.path.join("assets", asset_id)
+        os.makedirs(dir_path, exist_ok=True)
+
+        await asyncio.get_event_loop().run_in_executor(
+            None, download, asset_url, zip_path
+        )
+        await asyncio.get_event_loop().run_in_executor(None, unzip, zip_path, dir_path)
+
+        logging.info(
+            f"Photos for asset {asset_id} downloaded and extracted successfully!"
+        )
+
+    except Exception as e:
+        logging.error(f"Error processing asset {asset_id}: {str(e)}")
+
+
+def download(source: str, destination: str):
+    response = request.urlopen(source)
+    with open(destination, "wb") as f:
+        f.write(response.read())
+
+
+def unzip(source: str, destination: str):
+    with zipfile.ZipFile(source, "r") as zip_ref:
+        zip_ref.extractall(destination)
+    os.remove(source)
 
 
 async def main():
@@ -43,6 +74,9 @@ async def main():
 
 if __name__ == "__main__":
     load_dotenv()
+
+    api_root = os.getenv("API_ROOT")
+    storage_root = os.getenv("STORAGE_ROOT")
 
     log_format = "%(asctime)s [%(levelname)s]: (%(name)s) %(message)s"
     logging.basicConfig(level=logging.INFO, format=log_format)
