@@ -2,6 +2,7 @@ import asyncio
 import json
 import logging
 import os
+import requests
 import subprocess
 import zipfile
 
@@ -41,6 +42,43 @@ async def task(message: AbstractIncomingMessage):
             None, generate_gaussian_splatting, asset_id
         )
 
+        logging.info(f"Uploading colmap result for asset {asset_id}...")
+        response = await asyncio.get_event_loop().run_in_executor(
+            None,
+            upload,
+            os.path.join("assets", f"{asset_id}/sparse/0/points3D.ply"),
+            f"/files/{asset_id}/colmap.ply",
+        )
+
+        if response == 200:
+            url = f"{storage_root}/files/{asset_id}/colmap.ply"
+            requests.patch(
+                f"{api_root}/assets/pointcloud/{asset_id}",
+                headers={"Content-Type": "application/json"},
+                data=json.dumps({"url": url}),
+            )
+            logging.info(f"Colmap result uploaded successfully!")
+
+        logging.info(f"Uploading gaussian splatting result for asset {asset_id}...")
+        response = await asyncio.get_event_loop().run_in_executor(
+            None,
+            upload,
+            os.path.join(
+                "assets",
+                f"{asset_id}/output/point_cloud/iteration_30000/point_cloud.ply",
+            ),
+            f"/files/{asset_id}/3dgs.ply",
+        )
+
+        if response == 200:
+            url = f"{storage_root}/files/{asset_id}/3dgs.ply"
+            requests.patch(
+                f"{api_root}/assets/gaussian/{asset_id}",
+                headers={"Content-Type": "application/json"},
+                data=json.dumps({"url": url}),
+            )
+            logging.info(f"Gaussian splatting result uploaded successfully!")
+
     except Exception as e:
         logging.error(f"Error processing asset {asset_id}:")
         logging.error(str(e))
@@ -58,6 +96,12 @@ def unzip(source: str, destination: str):
     with zipfile.ZipFile(source, "r") as zip_ref:
         zip_ref.extractall(destination)
     os.remove(source)
+
+
+def upload(source: str, target: str):
+    data = {"folder": target}
+    files = {"file": (source.split("/")[-1], open(source, "rb"))}
+    return requests.post(f"{storage_root}/upload", data=data, files=files)
 
 
 def generate_gaussian_splatting(asset_id: str):
