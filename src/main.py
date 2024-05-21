@@ -50,7 +50,7 @@ async def task(message: AbstractIncomingMessage):
             f"/files/{asset_id}/colmap.ply",
         )
 
-        if response == 200:
+        if response.status_code == 200:
             url = f"{storage_root}/files/{asset_id}/colmap.ply"
             requests.patch(
                 f"{api_root}/assets/pointcloud/{asset_id}",
@@ -58,6 +58,9 @@ async def task(message: AbstractIncomingMessage):
                 data=json.dumps({"url": url}),
             )
             logging.info(f"Colmap result uploaded successfully!")
+        else:
+            logging.error(f"Error uploading colmap result:")
+            logging.error(response.reason)
 
         logging.info(f"Uploading gaussian splatting result for asset {asset_id}...")
         response = await asyncio.get_event_loop().run_in_executor(
@@ -70,7 +73,7 @@ async def task(message: AbstractIncomingMessage):
             f"/files/{asset_id}/3dgs.ply",
         )
 
-        if response == 200:
+        if response.status_code == 200:
             url = f"{storage_root}/files/{asset_id}/3dgs.ply"
             requests.patch(
                 f"{api_root}/assets/gaussian/{asset_id}",
@@ -78,6 +81,9 @@ async def task(message: AbstractIncomingMessage):
                 data=json.dumps({"url": url}),
             )
             logging.info(f"Gaussian splatting result uploaded successfully!")
+        else:
+            logging.error(f"Error uploading gaussian splatting result:")
+            logging.error(response.reason)
 
     except Exception as e:
         logging.error(f"Error processing asset {asset_id}:")
@@ -110,7 +116,7 @@ def generate_gaussian_splatting(asset_id: str):
     )
 
     output_path = os.path.join("assets", f"{asset_id}/output")
-    train_command = f"python ./models/gaussian-splatting/train.py -s ./assets/{asset_id} --model_path {output_path}"
+    train_command = f"python ./models/gaussian-splatting/train.py -s ./assets/{asset_id} --model_path {output_path} --test_iterations 7000"
 
     conda_setup_script = "/opt/conda/etc/profile.d/conda.sh"
     process = subprocess.run(
