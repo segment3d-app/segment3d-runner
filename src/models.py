@@ -51,12 +51,12 @@ class GaussianSplatting:
         )
 
     def __generate_colmap(self):
-        convert_command = [
+        convert_command = " ".join([
             "python",
             os.path.join(self.model_path, "convert.py"),
             "-s",
             os.path.join(self.assets_path, self.asset_id),
-        ].join(" ")
+        ])
 
         process = subprocess.run(
             f'bash -c "{self.__append_environment(convert_command)}"',
@@ -69,7 +69,7 @@ class GaussianSplatting:
             raise ColmapError(process.stderr)
 
     def __generate_gaussian_splatting(self):
-        train_command = [
+        train_command = " ".join([
             "python",
             os.path.join(self.model_path, "train_scene.py"),
             "-s",
@@ -78,7 +78,7 @@ class GaussianSplatting:
             self.output_path,
             "--iterations",
             "7000",
-        ].join(" ")
+        ])
 
         process = subprocess.run(
             f'bash -c "{self.__append_environment(train_command)}"',
