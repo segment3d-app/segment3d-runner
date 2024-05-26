@@ -15,14 +15,14 @@ from models import ColmapError, GaussianSplatting, GaussianSplattingError
 async def task(message: AbstractIncomingMessage):
     logging.info("Received message: %s", message.body)
 
+    data = json.loads(message.body.decode())
+    asset = Asset(
+        asset_id=data["asset_id"],
+        asset_path=data["photo_dir_url"],
+        storage_root=storage_root,
+    )
+    
     try:
-        data = json.loads(message.body.decode())
-        asset = Asset(
-            asset_id=data["asset_id"],
-            asset_path=data["photo_dir_url"],
-            storage_root=storage_root,
-        )
-
         await asset.download()
         await asset.unzip()
 

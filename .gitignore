@@ -1,3 +1,5 @@
 .venv/
 assets/
 dgx/
+
+__pycache__/
