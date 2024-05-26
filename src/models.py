@@ -17,9 +17,9 @@ class GaussianSplattingError(Exception):
 
 class GaussianSplatting:
     assets_path = "assets"
-    model_path = "models/gaussian-splatting"
+    model_path = "models/saga"
 
-    conda_env = "gaussian_splatting"
+    conda_env = "saga"
 
     def __init__(self, asset_id: str):
         self.asset_id = asset_id
@@ -71,12 +71,12 @@ class GaussianSplatting:
     def __generate_gaussian_splatting(self):
         train_command = [
             "python",
-            os.path.join(self.model_path, "train.py"),
+            os.path.join(self.model_path, "train_scene.py"),
             "-s",
             os.path.join(self.assets_path, self.asset_id),
             "--model_path",
             self.output_path,
-            "--test_iterations",
+            "--iterations",
             "7000",
         ].join(" ")
 
