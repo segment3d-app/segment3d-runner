@@ -16,7 +16,7 @@ class Asset:
         self.asset_name = asset_path.split("/")[2]
         self.asset_url = f"{storage_root}{parse.quote(asset_path)}"
 
-        self.asset_path = os.path.join(self.asset_path, self.asset_id)
+        self.asset_path = os.path.join(self.assets_path, self.asset_id)
         self.zip_path = f"{self.asset_path}.zip"
         self.dir_path = f"{self.asset_path}/input"
 
