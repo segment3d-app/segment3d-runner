@@ -8,8 +8,8 @@ from dotenv import load_dotenv
 from aio_pika import connect_robust
 from aio_pika.abc import AbstractIncomingMessage
 
-from src.assets import Asset
-from src.models import ColmapError, GaussianSplatting, GaussianSplattingError
+from assets import Asset
+from models import ColmapError, GaussianSplatting, GaussianSplattingError
 
 
 async def task(message: AbstractIncomingMessage):
