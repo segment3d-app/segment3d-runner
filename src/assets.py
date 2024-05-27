@@ -64,10 +64,10 @@ class Asset:
 
         end_time = time.time()
         logging.info(
-            f"Asset {self.asset_id}/{target_path} uploaded successfully in {end_time - start_time:.2f} seconds"
+            f"Asset uploaded successfully in {end_time - start_time:.2f} seconds"
         )
 
-        return response.json().url[0]
+        return response.json()["url"][0]
 
     def __download(self):
         response = request.urlopen(self.asset_url)
@@ -81,29 +81,6 @@ class Asset:
 
     def __upload(self, source_path: str, target_path: str):
         source = os.path.join("assets", self.asset_id, source_path)
-        data = {"folder": self.asset_id}
         files = {"file": (target_path, open(source, "rb"))}
+        data = {"folder": self.asset_id}
         return requests.post(f"{self.storage_root}/upload", data=data, files=files)
-
-    # logging.info(f"Uploading gaussian splatting result for asset {asset_id}...")
-    #     response = await asyncio.get_event_loop().run_in_executor(
-    #         None,
-    #         upload,
-    #         os.path.join(
-    #             "assets",
-    #             f"{asset_id}/output/point_cloud/iteration_30000/point_cloud.ply",
-    #         ),
-    #         f"/files/{asset_id}/3dgs.ply",
-    #     )
-
-    #     if response.status_code == 200:
-    #         url = f"{storage_root}/files/{asset_id}/3dgs.ply"
-    #         requests.patch(
-    #             f"{api_root}/assets/gaussian/{asset_id}",
-    #             headers={"Content-Type": "application/json"},
-    #             data=json.dumps({"url": url}),
-    #         )
-    #         logging.info(f"Gaussian splatting result uploaded successfully!")
-    #     else:
-    #         logging.error(f"Error uploading gaussian splatting result:")
-    #         logging.error(response.reason)
