@@ -30,7 +30,7 @@ async def task(message: AbstractIncomingMessage):
     except Exception as e:
         logging.error(f"Error processing asset {asset.asset_id}:")
         logging.error(str(e))
-        return await message.nack()
+        return message.nack()
 
     # ==========
 
@@ -41,39 +41,39 @@ async def task(message: AbstractIncomingMessage):
     except ColmapError as e:
         logging.error(f"Failed generating colmap for asset {asset.asset_id}:")
         logging.error(e.args[0])
-        return await message.nack()
+        return message.nack()
 
     except GaussianSplattingError as e:
         logging.error(
             f"Failed generating gaussian splatting for asset {asset.asset_id}:"
         )
         logging.error(e.args[0])
-        return await message.nack()
+        return message.nack()
 
     except Exception as e:
         logging.error(
             f"Error processing gaussian splatting for asset {asset.asset_id}:"
         )
         logging.error(str(e))
-        return await message.nack()
+        return message.nack()
 
     # ==========
 
     try:
         pointcloud_url = await asset.upload("sparse/0/points3D.ply", "pointcloud.ply")
-        await requests.patch(
+        requests.patch(
             f"{api_root}/assets/pointcloud/{asset.asset_id}",
             headers={"Content-Type": "application/json"},
-            data=json.dumps({"url": pointcloud_url}),
+            data={"url": pointcloud_url},
         )
 
         gaussian_url = await asset.upload(
             "output/point_cloud/iteration_7000/point_cloud.ply", "3dgs.ply"
         )
-        await requests.patch(
+        requests.patch(
             f"{api_root}/assets/gaussian/{asset.asset_id}",
             headers={"Content-Type": "application/json"},
-            data=json.dumps({"url": gaussian_url}),
+            data={"url": gaussian_url},
         )
 
     except AssetUploadError as e:
