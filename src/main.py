@@ -30,7 +30,7 @@ async def task(message: AbstractIncomingMessage):
     except Exception as e:
         logging.error(f"Error processing asset {asset.asset_id}:")
         logging.error(str(e))
-        return
+        return await message.nack()
 
     # ==========
 
@@ -41,21 +41,21 @@ async def task(message: AbstractIncomingMessage):
     except ColmapError as e:
         logging.error(f"Failed generating colmap for asset {asset.asset_id}:")
         logging.error(e.args[0])
-        return
+        return await message.nack()
 
     except GaussianSplattingError as e:
         logging.error(
             f"Failed generating gaussian splatting for asset {asset.asset_id}:"
         )
         logging.error(e.args[0])
-        return
+        return await message.nack()
 
     except Exception as e:
         logging.error(
             f"Error processing gaussian splatting for asset {asset.asset_id}:"
         )
         logging.error(str(e))
-        return
+        return await message.nack()
 
     # ==========
 
@@ -79,16 +79,16 @@ async def task(message: AbstractIncomingMessage):
     except AssetUploadError as e:
         logging.error(f"Failed uploading asset {asset.asset_id}:")
         logging.error(e.args[0])
-        return
+        return await message.nack()
 
     except Exception as e:
         logging.error(f"Error uploading asset {asset.asset_id}:")
         logging.error(str(e))
-        return
+        return await message.nack()
 
     # ==========
 
-    # await message.ack()
+    await message.ack()
 
 
 async def main():
