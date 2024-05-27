@@ -7,8 +7,9 @@ from dotenv import load_dotenv
 
 from aio_pika import connect_robust
 from aio_pika.abc import AbstractIncomingMessage
+import requests
 
-from assets import Asset
+from assets import Asset, AssetUploadError
 from models import ColmapError, GaussianSplatting, GaussianSplattingError
 
 
@@ -21,7 +22,7 @@ async def task(message: AbstractIncomingMessage):
         asset_path=data["photo_dir_url"],
         storage_root=storage_root,
     )
-    
+
     try:
         await asset.download()
         await asset.unzip()
@@ -29,6 +30,7 @@ async def task(message: AbstractIncomingMessage):
     except Exception as e:
         logging.error(f"Error processing asset {asset.asset_id}:")
         logging.error(str(e))
+        return
 
     # ==========
 
@@ -39,65 +41,52 @@ async def task(message: AbstractIncomingMessage):
     except ColmapError as e:
         logging.error(f"Failed generating colmap for asset {asset.asset_id}:")
         logging.error(e.args[0])
+        return
 
     except GaussianSplattingError as e:
         logging.error(
             f"Failed generating gaussian splatting for asset {asset.asset_id}:"
         )
         logging.error(e.args[0])
+        return
 
     except Exception as e:
         logging.error(
             f"Error processing gaussian splatting for asset {asset.asset_id}:"
         )
         logging.error(str(e))
+        return
 
     # ==========
 
-    # logging.info(f"Uploading colmap result for asset {asset_id}...")
-    # response = await asyncio.get_event_loop().run_in_executor(
-    #     None,
-    #     upload,
-    #     os.path.join("assets", f"{asset_id}/sparse/0/points3D.ply"),
-    #     asset_id,
-    #     "colmap.py",
-    # )
+    try:
+        pointcloud_url = await asset.upload("sparse/0/points3D.ply", "pointcloud.ply")
+        await requests.patch(
+            f"{api_root}/assets/pointcloud/{asset.asset_id}",
+            headers={"Content-Type": "application/json"},
+            data=json.dumps({"url": pointcloud_url}),
+        )
 
-    # if response.status_code == 200:
-    #     url = f"{storage_root}/files/{asset_id}/colmap.ply"
-    #     requests.patch(
-    #         f"{api_root}/assets/pointcloud/{asset_id}",
-    #         headers={"Content-Type": "application/json"},
-    #         data=json.dumps({"url": url}),
-    #     )
-    #     logging.info(f"Colmap result uploaded successfully!")
-    # else:
-    #     logging.error(f"Error uploading colmap result:")
-    #     logging.error(response.reason)
+        gaussian_url = await asset.upload(
+            "output/point_cloud/iteration_7000/point_cloud.ply", "3dgs.ply"
+        )
+        await requests.patch(
+            f"{api_root}/assets/gaussian/{asset.asset_id}",
+            headers={"Content-Type": "application/json"},
+            data=json.dumps({"url": gaussian_url}),
+        )
 
-    # logging.info(f"Uploading gaussian splatting result for asset {asset_id}...")
-    # response = await asyncio.get_event_loop().run_in_executor(
-    #     None,
-    #     upload,
-    #     os.path.join(
-    #         "assets",
-    #         f"{asset_id}/output/point_cloud/iteration_7000/point_cloud.ply",
-    #     ),
-    #     asset_id,
-    #     "3dgs.ply",
-    # )
+    except AssetUploadError as e:
+        logging.error(f"Failed uploading asset {asset.asset_id}:")
+        logging.error(e.args[0])
+        return
 
-    # if response.status_code == 200:
-    #     url = f"{storage_root}/files/{asset_id}/3dgs.ply"
-    #     requests.patch(
-    #         f"{api_root}/assets/gaussian/{asset_id}",
-    #         headers={"Content-Type": "application/json"},
-    #         data=json.dumps({"url": url}),
-    #     )
-    #     logging.info(f"Gaussian splatting result uploaded successfully!")
-    # else:
-    #     logging.error(f"Error uploading gaussian splatting result:")
-    #     logging.error(response.reason)
+    except Exception as e:
+        logging.error(f"Error uploading asset {asset.asset_id}:")
+        logging.error(str(e))
+        return
+
+    # ==========
 
     # await message.ack()
 
