@@ -61,20 +61,28 @@ async def task(message: AbstractIncomingMessage):
 
     try:
         pointcloud_url = await asset.upload("sparse/0/points3D.ply", "pointcloud.ply")
-        requests.patch(
+
+        response = requests.patch(
             f"{api_root}/assets/pointcloud/{asset.asset_id}",
             headers={"Content-Type": "application/json"},
             data={"url": pointcloud_url},
         )
 
+        if response.status_code != 200:
+            raise Exception(response.reason)
+
         gaussian_url = await asset.upload(
             "output/point_cloud/iteration_7000/point_cloud.ply", "3dgs.ply"
         )
-        requests.patch(
+
+        response = requests.patch(
             f"{api_root}/assets/gaussian/{asset.asset_id}",
             headers={"Content-Type": "application/json"},
             data={"url": gaussian_url},
         )
+
+        if response.status_code != 200:
+            raise Exception(response.reason)
 
     except AssetUploadError as e:
         logging.error(f"Failed uploading asset {asset.asset_id}:")
