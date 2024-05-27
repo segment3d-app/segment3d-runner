@@ -88,6 +88,7 @@ async def task(message: AbstractIncomingMessage):
 
     # ==========
 
+    asset.clear()
     await message.ack()
 
 

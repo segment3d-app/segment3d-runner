@@ -2,6 +2,7 @@ import asyncio
 import os
 import logging
 import requests
+import shutil
 import time
 import zipfile
 
@@ -68,6 +69,9 @@ class Asset:
         )
 
         return response.json()["url"][0]
+
+    def clear(self):
+        shutil.rmtree(self.asset_path)
 
     def __download(self):
         response = request.urlopen(self.asset_url)
