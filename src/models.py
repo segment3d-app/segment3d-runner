@@ -25,7 +25,7 @@ class GaussianSplatting:
         self.asset_id = asset_id
         self.output_path = os.path.join(self.assets_path, f"{asset_id}/output")
 
-    async def generate(self):
+    async def generate_colmap(self):
         logging.info(f"Generating colmap for asset {self.asset_id}...")
 
         start_time = time.time()
@@ -36,8 +36,7 @@ class GaussianSplatting:
             f"Colmap generated successfully in {end_time - start_time:.2f} seconds"
         )
 
-        # ==========
-
+    async def generate_gaussian_splatting(self):
         logging.info(f"Generating gaussian splatting for asset {self.asset_id}...")
 
         start_time = time.time()
