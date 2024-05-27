@@ -2,12 +2,12 @@ import asyncio
 import json
 import logging
 import os
+import requests
 
 from dotenv import load_dotenv
 
 from aio_pika import connect_robust
 from aio_pika.abc import AbstractIncomingMessage
-import requests
 
 from assets import Asset, AssetUploadError
 from models import ColmapError, GaussianSplatting, GaussianSplattingError
@@ -118,7 +118,7 @@ async def main():
 if __name__ == "__main__":
     load_dotenv()
 
-    api_root = os.getenv("API_ROOT")
+    api_root = os.getenv("API_ROOT") + "/api"
     storage_root = os.getenv("STORAGE_ROOT")
 
     log_format = "%(asctime)s [%(levelname)s]: (%(name)s) %(message)s"
