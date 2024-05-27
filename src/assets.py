@@ -67,7 +67,7 @@ class Asset:
             f"Asset {self.asset_id}/{target_path} uploaded successfully in {end_time - start_time:.2f} seconds"
         )
 
-        return response.json.url[0]
+        return response.json().url[0]
 
     def __download(self):
         response = request.urlopen(self.asset_url)
