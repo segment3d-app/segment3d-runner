@@ -31,7 +31,7 @@ class Asset:
 
         os.makedirs(self.dir_path, exist_ok=True)
 
-    async def exists(self, path: str):
+    def exists(self, path: str):
         return Path(self.asset_path, path).exists()
 
     async def download(self):
