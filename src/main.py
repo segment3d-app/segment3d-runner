@@ -74,7 +74,7 @@ async def task(message: AbstractIncomingMessage):
                 "output/point_cloud/iteration_7000/scene_point_cloud.ply", "3dgs.ply"
             )
             response = requests.patch(
-                f"{api_root}/assets/pointcloud/{asset.asset_id}",
+                f"{api_root}/assets/gaussian/{asset.asset_id}",
                 headers={"Content-Type": "application/json"},
                 data=json.dumps({"url": gaussian_url}),
             )
