@@ -38,8 +38,8 @@ async def task(message: AbstractIncomingMessage):
     try:
         await gaussian_splatting.generate_colmap()
 
-        if asset.exists("sparse/0/points3D.ply"):
-            gaussian_url = await asset.upload("sparse/0/points3D.ply", "pointcloud.ply")
+        if asset.exists("sparse/0/colmap.ply"):
+            gaussian_url = await asset.upload("sparse/0/colmap.ply", "pointcloud.ply")
             response = requests.patch(
                 f"{api_root}/assets/pointcloud/{asset.asset_id}",
                 headers={"Content-Type": "application/json"},
