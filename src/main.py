@@ -69,9 +69,9 @@ async def task(message: AbstractIncomingMessage):
     try:
         await gaussian_splatting.generate_gaussian_splatting()
 
-        if asset.exists("output/point_cloud/iteration_7000/point_cloud.ply"):
+        if asset.exists("output/point_cloud/iteration_7000/scene_point_cloud.ply"):
             gaussian_url = await asset.upload(
-                "output/point_cloud/iteration_7000/point_cloud.ply", "3dgs.ply"
+                "output/point_cloud/iteration_7000/scene_point_cloud.ply", "3dgs.ply"
             )
             response = requests.patch(
                 f"{api_root}/assets/pointcloud/{asset.asset_id}",
@@ -105,7 +105,7 @@ async def task(message: AbstractIncomingMessage):
 
     # ==========
 
-    asset.clear()
+    # asset.clear()
     await message.ack()
 
 
