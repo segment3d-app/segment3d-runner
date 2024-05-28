@@ -23,13 +23,15 @@ class GaussianSplatting:
 
     def __init__(self, asset_id: str):
         self.asset_id = asset_id
-        self.output_path = os.path.join(self.assets_path, asset_id, "output")
+        self.asset_path = os.path.join(self.assets_path, asset_id)
+        self.output_path = os.path.join(self.asset_path, "output")
 
     async def generate_colmap(self):
         logging.info(f"Generating colmap for asset {self.asset_id}...")
 
         start_time = time.time()
         await asyncio.get_event_loop().run_in_executor(None, self.__generate_colmap)
+        await asyncio.get_event_loop().run_in_executor(None, self.__convert_colmap)
 
         end_time = time.time()
         logging.info(
@@ -50,7 +52,7 @@ class GaussianSplatting:
         )
 
     def __generate_colmap(self):
-        convert_command = [
+        colmap_command = [
             "python",
             os.path.join(self.model_path, "convert.py"),
             "-s",
@@ -58,7 +60,29 @@ class GaussianSplatting:
         ]
 
         process = subprocess.run(
-            f'bash -c "{self.__append_environment(" ".join(convert_command))}"',
+            f'bash -c "{self.__append_environment(" ".join(colmap_command))}"',
+            text=True,
+            shell=True,
+            capture_output=True,
+        )
+
+        if process.returncode != 0:
+            raise ColmapError(process.stderr)
+
+    def __convert_colmap(self):
+        colmap_command = [
+            "colmap",
+            "model_converter",
+            "--input_path",
+            os.path.join(self.asset_path, "sparse/0"),
+            "--output_path",
+            os.path.join(self.asset_path, "sparse/0/colmap.ply"),
+            "--output_type",
+            "PLY",
+        ]
+
+        process = subprocess.run(
+            f'bash -c "{self.__append_environment(" ".join(colmap_command))}"',
             text=True,
             shell=True,
             capture_output=True,
