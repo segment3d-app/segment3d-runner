@@ -23,7 +23,7 @@ class GaussianSplatting:
 
     def __init__(self, asset_id: str):
         self.asset_id = asset_id
-        self.output_path = os.path.join(self.assets_path, f"{asset_id}/output")
+        self.output_path = os.path.join(self.assets_path, asset_id, "output")
 
     async def generate_colmap(self):
         logging.info(f"Generating colmap for asset {self.asset_id}...")
@@ -50,15 +50,15 @@ class GaussianSplatting:
         )
 
     def __generate_colmap(self):
-        convert_command = " ".join([
+        convert_command = [
             "python",
             os.path.join(self.model_path, "convert.py"),
             "-s",
             os.path.join(self.assets_path, self.asset_id),
-        ])
+        ]
 
         process = subprocess.run(
-            f'bash -c "{self.__append_environment(convert_command)}"',
+            f'bash -c "{self.__append_environment(" ".join(convert_command))}"',
             text=True,
             shell=True,
             capture_output=True,
@@ -68,7 +68,7 @@ class GaussianSplatting:
             raise ColmapError(process.stderr)
 
     def __generate_gaussian_splatting(self):
-        train_command = " ".join([
+        train_command = [
             "python",
             os.path.join(self.model_path, "train_scene.py"),
             "-s",
@@ -77,10 +77,10 @@ class GaussianSplatting:
             self.output_path,
             "--iterations",
             "7000",
-        ])
+        ]
 
         process = subprocess.run(
-            f'bash -c "{self.__append_environment(train_command)}"',
+            f'bash -c "{self.__append_environment(" ".join(train_command))}"',
             text=True,
             shell=True,
             capture_output=True,
@@ -88,6 +88,40 @@ class GaussianSplatting:
 
         if process.returncode != 0:
             raise GaussianSplattingError(process.stderr)
+
+    def __append_environment(self, command: str):
+        return f"source {conda_source} && conda activate {self.conda_env} && {command} && conda deactivate"
+
+
+class PTv3:
+    assets_path = "assets"
+    model_path = "models/pointcept"
+
+    conda_env = "pointcept"
+
+    def __init__(self, asset_id: str):
+        self.asset_id = asset_id
+        self.output_path = os.path.join(self.assets_path, f"{asset_id}/output")
+
+    # def __extract_features(self):
+    #     convert_command = " ".join(
+    #         [
+    #             "python",
+    #             os.path.join(self.model_path, "convert.py"),
+    #             "-s",
+    #             os.path.join(self.assets_path, self.asset_id),
+    #         ]
+    #     )
+
+    #     process = subprocess.run(
+    #         f'bash -c "{self.__append_environment(convert_command)}"',
+    #         text=True,
+    #         shell=True,
+    #         capture_output=True,
+    #     )
+
+    #     if process.returncode != 0:
+    #         raise ColmapError(process.stderr)
 
     def __append_environment(self, command: str):
         return f"source {conda_source} && conda activate {self.conda_env} && {command} && conda deactivate"

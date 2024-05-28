@@ -6,6 +6,7 @@ import shutil
 import time
 import zipfile
 
+from pathlib import Path
 from urllib import parse, request
 
 
@@ -29,6 +30,9 @@ class Asset:
         self.dir_path = f"{self.asset_path}/input"
 
         os.makedirs(self.dir_path, exist_ok=True)
+
+    async def exists(self, path: str):
+        return Path(self.asset_path, path).exists()
 
     async def download(self):
         logging.info(f"Downloading asset {self.asset_id}...")
