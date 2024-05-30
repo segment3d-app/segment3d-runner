@@ -32,4 +32,5 @@ wget -q 'https://southeastasia1-mediap.svc.ms/transform/zip?cs=fFNQTw' -O model.
 unzip model.zip
 rm model.zip
 
+mkdir models
 mv s3dis-semseg-pt-v3m1-0-rpe models/ptv3
