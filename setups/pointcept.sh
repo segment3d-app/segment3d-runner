@@ -13,11 +13,11 @@ apt-get -qq install libgl1-mesa-glx
 echo "pointcept: [2/4] initializing environment..."
 
 conda env create -f environment.yml
-pip install open3d
 
 echo "pointcept: [3/4] initializing environment..."
 
 conda activate pointcept
+pip install open3d
 
 cd libs/pointops
 python setup.py install
