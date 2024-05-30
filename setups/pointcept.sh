@@ -1,5 +1,6 @@
 #!/bin/bash
 source ~/.bashrc
+source /opt/conda/etc/profile.d/conda.sh
 
 set -e
 cd ../models/pointcept
