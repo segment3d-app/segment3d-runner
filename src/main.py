@@ -10,7 +10,7 @@ from aio_pika import connect_robust
 from aio_pika.abc import AbstractIncomingMessage
 
 from assets import Asset, AssetUploadError
-from .models import (
+from models import (
     ColmapError,
     GaussianSplatting,
     GaussianSplattingError,
