@@ -191,7 +191,11 @@ class PTv3:
         )
 
     def __convert(self):
-        ply_path = "input/lidar.ply" if self.asset_type == "lidar" else "output/point_cloud/iteration_7000/scene_point_cloud.ply"
+        ply_path = (
+            "input/lidar.ply"
+            if self.asset_type == "lidar"
+            else "output/point_cloud/iteration_7000/scene_point_cloud.ply"
+        )
         command = f"""python {os.path.join(self.model_path, "convert_ply.py")} \
             -n scene \
             -p {os.path.join(self.asset_path, ply_path)} \
@@ -225,12 +229,14 @@ class PTv3:
             raise PTv3PreprocessError(process.stderr)
 
     def __infer(self):
-        options = " ".join([
-            f"weight={os.path.join(self.model_path, "models/ptv3/model/model_best.pth")}", 
-            f"save_path={os.path.join(self.asset_path, "data")}",
-            f"data_root={os.path.join(self.asset_path, "data/scene")}",
-            f"data.test.data_root={os.path.join(self.asset_path, "data/scene")}",
-        ])
+        options = " ".join(
+            [
+                f"""weight={os.path.join(self.model_path, "models/ptv3/model/model_best.pth")}""",
+                f"""save_path={os.path.join(self.asset_path, "data")}""",
+                f"""data_root={os.path.join(self.asset_path, "data/scene")}""",
+                f"""data.test.data_root={os.path.join(self.asset_path, "data/scene")}""",
+            ]
+        )
 
         command = f"""python {os.path.join(self.model_path, "tools/pred.py")} \
             --config_file {os.path.join(self.model_path, "models/ptv3/config.py")} \
@@ -248,7 +254,7 @@ class PTv3:
 
         if process.returncode != 0:
             raise PTv3InferenceError(process.stderr)
-        
+
     def __reconstruct(self):
         command = f"""python {os.path.join(self.model_path, "convert_npy.py")} \
             --gaussian {os.path.join(self.asset_path, "output/point_cloud/iteration_7000/scene_point_cloud.ply")} \
@@ -256,7 +262,7 @@ class PTv3:
             --destination {os.path.join(self.asset_path, "segmentation")} \
             --name ptv3
             """
-        
+
         process = subprocess.run(
             f'export PYTHONPATH=models/pointcept && bash -c "{self.__append_environment(command)}"',
             text=True,
