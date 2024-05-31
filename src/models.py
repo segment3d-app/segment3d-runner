@@ -4,6 +4,7 @@ import os
 import subprocess
 import time
 
+from pathlib import Path
 from utils import pick_available_gpus
 
 assets_path = "assets"
@@ -155,51 +156,63 @@ class PTv3:
         self.asset_path = os.path.join(assets_path, asset_id)
 
     async def process(self):
-        logging.info(f"Converting PLY for asset {self.asset_id}...")
+        if not Path(self.asset_path, "data/scene/scene/scene_alignmentAngle.txt").exists():
+            logging.info(f"Converting PLY for asset {self.asset_id}...")
 
-        start_time = time.time()
-        await asyncio.get_event_loop().run_in_executor(None, self.__convert)
+            start_time = time.time()
+            await asyncio.get_event_loop().run_in_executor(None, self.__convert)
 
-        end_time = time.time()
-        logging.info(
-            f"PLY converted successfully in {end_time - start_time:.2f} seconds"
-        )
-
-        # ==========
-
-        logging.info(f"Preprocessing dataset for asset {self.asset_id}...")
-
-        start_time = time.time()
-        await asyncio.get_event_loop().run_in_executor(None, self.__preprocess)
-
-        end_time = time.time()
-        logging.info(
-            f"Dataset preprocessed successfully in {end_time - start_time:.2f} seconds"
-        )
+            end_time = time.time()
+            logging.info(
+                f"PLY converted successfully in {end_time - start_time:.2f} seconds"
+            )
+        else:
+            logging.info(f"Skipped converting PLY for asset {self.asset_id}")
 
         # ==========
 
-        logging.info(f"Inferring segmentation for asset {self.asset_id}...")
+        if not Path(self.asset_path, "data/scene/scene/scene.pth").exists():
+            logging.info(f"Preprocessing dataset for asset {self.asset_id}...")
 
-        start_time = time.time()
-        await asyncio.get_event_loop().run_in_executor(None, self.__infer)
+            start_time = time.time()
+            await asyncio.get_event_loop().run_in_executor(None, self.__preprocess)
 
-        end_time = time.time()
-        logging.info(
-            f"Segmentation inferred successfully in {end_time - start_time:.2f} seconds"
-        )
+            end_time = time.time()
+            logging.info(
+                f"Dataset preprocessed successfully in {end_time - start_time:.2f} seconds"
+            )
+        else:
+            logging.info(f"Skipped preprocessing dataset for asset {self.asset_id}")
 
         # ==========
 
-        logging.info(f"Reconstructing dataset for asset {self.asset_id}...")
+        if not Path(self.asset_path, "scene/result/scene.npy").exists():
+            logging.info(f"Inferring segmentation for asset {self.asset_id}...")
 
-        start_time = time.time()
-        await asyncio.get_event_loop().run_in_executor(None, self.__reconstruct)
+            start_time = time.time()
+            await asyncio.get_event_loop().run_in_executor(None, self.__infer)
 
-        end_time = time.time()
-        logging.info(
-            f"Dataset reconstructed successfully in {end_time - start_time:.2f} seconds"
-        )
+            end_time = time.time()
+            logging.info(
+                f"Segmentation inferred successfully in {end_time - start_time:.2f} seconds"
+            )
+        else:
+            logging.info(f"Skipped inferring segmentation for asset {self.asset_id}")
+
+        # ==========
+
+        if not Path(self.asset_path, "segmentation/ptv3.ply").exists():
+            logging.info(f"Reconstructing dataset for asset {self.asset_id}...")
+
+            start_time = time.time()
+            await asyncio.get_event_loop().run_in_executor(None, self.__reconstruct)
+
+            end_time = time.time()
+            logging.info(
+                f"Dataset reconstructed successfully in {end_time - start_time:.2f} seconds"
+            )
+        else:
+            logging.info(f"Skipped reconstructing dataset for asset {self.asset_id}")
 
     def __convert(self):
         ply_path = (
