@@ -274,4 +274,5 @@ class PTv3:
             raise PTv3ReconstructionError(process.stderr)
 
     def __append_environment(self, command: str):
+        command = " ".join(line.strip() for line in command.splitlines())
         return f"source {conda_source} && conda activate {self.conda_env} && {command} && conda deactivate"
