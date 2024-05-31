@@ -17,17 +17,19 @@ class AssetUploadError(Exception):
 class Asset:
     assets_path = "assets"
 
-    def __init__(self, asset_id: str, asset_path: str, storage_root: str):
+    def __init__(
+        self, asset_id: str, images_path: str, pcl_path: str | None, storage_root: str
+    ):
         self.storage_root = storage_root
 
         self.asset_id = asset_id
-
-        self.asset_name = asset_path.split("/")[2]
-        self.asset_url = f"{storage_root}{parse.quote(asset_path)}"
+        self.images_url = f"{storage_root}{parse.quote(images_path)}"
+        self.pcl_url = f"{storage_root}{parse.quote(pcl_path)}"
 
         self.asset_path = os.path.join(self.assets_path, self.asset_id)
         self.zip_path = f"{self.asset_path}.zip"
         self.dir_path = f"{self.asset_path}/input"
+        self.pcl_path = f"{self.asset_path}/input/lidar.ply"
 
         os.makedirs(self.dir_path, exist_ok=True)
 
@@ -38,7 +40,8 @@ class Asset:
         logging.info(f"Downloading asset {self.asset_id}...")
         start_time = time.time()
 
-        await asyncio.get_event_loop().run_in_executor(None, self.__download)
+        await asyncio.get_event_loop().run_in_executor(None, self.__download_images)
+        await asyncio.get_event_loop().run_in_executor(None, self.__download_pcl)
 
         end_time = time.time()
         logging.info(
@@ -77,9 +80,14 @@ class Asset:
     def clear(self):
         shutil.rmtree(self.asset_path)
 
-    def __download(self):
-        response = request.urlopen(self.asset_url)
+    def __download_images(self):
+        response = request.urlopen(self.images_url)
         with open(self.zip_path, "wb") as f:
+            f.write(response.read())
+
+    def __download_pcl(self):
+        response = request.urlopen(self.pcl_url)
+        with open(self.pcl_path, "wb") as f:
             f.write(response.read())
 
     def __unzip(self):
