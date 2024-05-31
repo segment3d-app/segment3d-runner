@@ -18,20 +18,21 @@ class Asset:
     assets_path = "assets"
 
     def __init__(
-        self, asset_id: str, images_path: str, pcl_path: str | None, storage_root: str
+        self, asset_id: str, images_path: str, pcl_path: str, storage_root: str
     ):
         self.storage_root = storage_root
-
         self.asset_id = asset_id
-        self.images_url = f"{storage_root}{parse.quote(images_path)}"
-        self.pcl_url = f"{storage_root}{parse.quote(pcl_path)}"
-
         self.asset_path = os.path.join(self.assets_path, self.asset_id)
+
+        self.images_url = f"{storage_root}{parse.quote(images_path)}"
         self.zip_path = f"{self.asset_path}.zip"
         self.dir_path = f"{self.asset_path}/input"
-        self.pcl_path = f"{self.asset_path}/input/lidar.ply"
 
         os.makedirs(self.dir_path, exist_ok=True)
+
+        if pcl_path is not None:
+            self.pcl_url = f"{storage_root}{parse.quote(pcl_path)}"
+            self.pcl_path = f"{self.asset_path}/input/lidar.ply"
 
     def exists(self, path: str):
         return Path(self.asset_path, path).exists()
@@ -41,7 +42,9 @@ class Asset:
         start_time = time.time()
 
         await asyncio.get_event_loop().run_in_executor(None, self.__download_images)
-        await asyncio.get_event_loop().run_in_executor(None, self.__download_pcl)
+
+        if self.pcl_url:
+            await asyncio.get_event_loop().run_in_executor(None, self.__download_pcl)
 
         end_time = time.time()
         logging.info(
