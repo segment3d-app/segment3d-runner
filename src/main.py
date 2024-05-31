@@ -58,18 +58,19 @@ async def task(message: AbstractIncomingMessage):
     # ==== Generate colmap for asset
 
     try:
-        await gaussian_splatting.generate_colmap()
+        if not asset.exists("sparse/0/colmap.ply"):
+            await gaussian_splatting.generate_colmap()
 
-        if asset.exists("sparse/0/colmap.ply"):
-            colmap_url = await asset.upload("sparse/0/colmap.ply", "pointcloud.ply")
-            response = requests.patch(
-                f"{api_root}/assets/pointcloud/{asset.asset_id}",
-                headers={"Content-Type": "application/json"},
-                data=json.dumps({"url": colmap_url}),
-            )
+            if asset.exists("sparse/0/colmap.ply"):
+                colmap_url = await asset.upload("sparse/0/colmap.ply", "pointcloud.ply")
+                response = requests.patch(
+                    f"{api_root}/assets/pointcloud/{asset.asset_id}",
+                    headers={"Content-Type": "application/json"},
+                    data=json.dumps({"url": colmap_url}),
+                )
 
-            if response.status_code != 200:
-                raise PatchError(response.reason)
+                if response.status_code != 200:
+                    raise PatchError(response.reason)
 
     except ColmapError as e:
         logging.error(f"Failed generating colmap for asset {asset.asset_id}:")
@@ -96,20 +97,21 @@ async def task(message: AbstractIncomingMessage):
     # ==== Generate gaussian splatting for asset
 
     try:
-        await gaussian_splatting.generate_gaussian_splatting()
+        if not asset.exists("output/point_cloud/iteration_7000/scene_point_cloud.ply"):
+            await gaussian_splatting.generate_gaussian_splatting()
 
-        if asset.exists("output/point_cloud/iteration_7000/scene_point_cloud.ply"):
-            gaussian_url = await asset.upload(
-                "output/point_cloud/iteration_7000/scene_point_cloud.ply", "3dgs.ply"
-            )
-            response = requests.patch(
-                f"{api_root}/assets/gaussian/{asset.asset_id}",
-                headers={"Content-Type": "application/json"},
-                data=json.dumps({"url": gaussian_url}),
-            )
+            if asset.exists("output/point_cloud/iteration_7000/scene_point_cloud.ply"):
+                gaussian_url = await asset.upload(
+                    "output/point_cloud/iteration_7000/scene_point_cloud.ply", "3dgs.ply"
+                )
+                response = requests.patch(
+                    f"{api_root}/assets/gaussian/{asset.asset_id}",
+                    headers={"Content-Type": "application/json"},
+                    data=json.dumps({"url": gaussian_url}),
+                )
 
-            if response.status_code != 200:
-                raise PatchError(response.reason)
+                if response.status_code != 200:
+                    raise PatchError(response.reason)
 
     except GaussianSplattingError as e:
         logging.error(
@@ -140,18 +142,19 @@ async def task(message: AbstractIncomingMessage):
     # ==== Process object segmentation with PTv3
 
     try:
-        await ptv3.process()
+        if not asset.exists("segmentation/ptv3.ply"):
+            await ptv3.process()
 
-        if asset.exists("segmentation/ptv3.ply"):
-            ptv3_url = await asset.upload("segmentation/ptv3.ply", "ptv3.ply")
-            response = requests.patch(
-                f"{api_root}/assets/ptv3/{asset.asset_id}",
-                headers={"Content-Type": "application/json"},
-                data=json.dumps({"url": ptv3_url}),
-            )
+            if asset.exists("segmentation/ptv3.ply"):
+                ptv3_url = await asset.upload("segmentation/ptv3.ply", "ptv3.ply")
+                response = requests.patch(
+                    f"{api_root}/assets/ptv3/{asset.asset_id}",
+                    headers={"Content-Type": "application/json"},
+                    data=json.dumps({"url": ptv3_url}),
+                )
 
-            if response.status_code != 200:
-                raise PatchError(response.reason)
+                if response.status_code != 200:
+                    raise PatchError(response.reason)
 
     except PTv3ConvertError as e:
         logging.error(f"Failed converting ptv3 dataset for asset {asset.asset_id}:")
