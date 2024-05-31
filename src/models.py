@@ -228,8 +228,8 @@ class PTv3:
 
     def __preprocess(self):
         command = f"""python {os.path.join(self.model_path, "preprocess.py")} \
-            --dataset_root {os.path.join(self.asset_path, "data")}
-            --output_root {os.path.join(self.asset_path, "data")}
+            --dataset_root {os.path.join(self.asset_path, "data/scene")}
+            --output_root {os.path.join(self.asset_path, "data/scene")}
             """
 
         env = os.environ.copy()
