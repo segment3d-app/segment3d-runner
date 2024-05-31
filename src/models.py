@@ -4,6 +4,8 @@ import os
 import subprocess
 import time
 
+from utils import pick_available_gpus
+
 assets_path = "assets"
 conda_source = "/opt/conda/etc/profile.d/conda.sh"
 
@@ -60,11 +62,14 @@ class GaussianSplatting:
             os.path.join(self.assets_path, self.asset_id),
         ]
 
+        env = os.environ.copy()
+        env["CUDA_VISIBLE_DEVICES"] = ",".join(pick_available_gpus())
         process = subprocess.run(
             f'bash -c "{self.__append_environment(" ".join(colmap_command))}"',
             text=True,
             shell=True,
             capture_output=True,
+            env=env,
         )
 
         if process.returncode != 0:
@@ -82,11 +87,14 @@ class GaussianSplatting:
             "PLY",
         ]
 
+        env = os.environ.copy()
+        env["CUDA_VISIBLE_DEVICES"] = ",".join(pick_available_gpus())
         process = subprocess.run(
             f'bash -c "{self.__append_environment(" ".join(colmap_command))}"',
             text=True,
             shell=True,
             capture_output=True,
+            env=env,
         )
 
         if process.returncode != 0:
@@ -104,11 +112,14 @@ class GaussianSplatting:
             "7000",
         ]
 
+        env = os.environ.copy()
+        env["CUDA_VISIBLE_DEVICES"] = ",".join(pick_available_gpus())
         process = subprocess.run(
             f'bash -c "{self.__append_environment(" ".join(train_command))}"',
             text=True,
             shell=True,
             capture_output=True,
+            env=env,
         )
 
         if process.returncode != 0:
@@ -202,11 +213,14 @@ class PTv3:
             -d {os.path.join(self.asset_path, "data")}
             """
 
+        env = os.environ.copy()
+        env["CUDA_VISIBLE_DEVICES"] = ",".join(pick_available_gpus())
         process = subprocess.run(
             f'bash -c "{self.__append_environment(command)}"',
             text=True,
             shell=True,
             capture_output=True,
+            env=env,
         )
 
         if process.returncode != 0:
@@ -218,11 +232,14 @@ class PTv3:
             --output_root {os.path.join(self.asset_path, "data")}
             """
 
+        env = os.environ.copy()
+        env["CUDA_VISIBLE_DEVICES"] = ",".join(pick_available_gpus())
         process = subprocess.run(
             f'bash -c "{self.__append_environment(command)}"',
             text=True,
             shell=True,
             capture_output=True,
+            env=env,
         )
 
         if process.returncode != 0:
@@ -245,11 +262,14 @@ class PTv3:
             --options {options}
             """
 
+        env = os.environ.copy()
+        env["CUDA_VISIBLE_DEVICES"] = ",".join(pick_available_gpus())
         process = subprocess.run(
             f'export PYTHONPATH=models/pointcept && bash -c "{self.__append_environment(command)}"',
             text=True,
             shell=True,
             capture_output=True,
+            env=env,
         )
 
         if process.returncode != 0:
@@ -263,11 +283,14 @@ class PTv3:
             --name ptv3
             """
 
+        env = os.environ.copy()
+        env["CUDA_VISIBLE_DEVICES"] = ",".join(pick_available_gpus())
         process = subprocess.run(
             f'export PYTHONPATH=models/pointcept && bash -c "{self.__append_environment(command)}"',
             text=True,
             shell=True,
             capture_output=True,
+            env=env,
         )
 
         if process.returncode != 0:
