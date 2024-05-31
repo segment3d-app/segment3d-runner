@@ -256,9 +256,9 @@ class PTv3:
         )
 
         command = f"""python {os.path.join(self.model_path, "tools/pred.py")} \
-            --config_file {os.path.join(self.model_path, "models/ptv3/config.py")} \
+            --config-file {os.path.join(self.model_path, "models/ptv3/config.py")} \
             --test_split scene \
-            --num_gpus 2 \
+            --num-gpus 2 \
             --options {options}
             """
 
