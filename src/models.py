@@ -263,9 +263,10 @@ class PTv3:
             """
 
         env = os.environ.copy()
+        env["PYTHONPATH"] = "models/pointcept"
         env["CUDA_VISIBLE_DEVICES"] = ",".join(pick_available_gpus())
         process = subprocess.run(
-            f'export PYTHONPATH=models/pointcept && bash -c "{self.__append_environment(command)}"',
+            f'bash -c "{self.__append_environment(command)}"',
             text=True,
             shell=True,
             capture_output=True,
@@ -284,9 +285,10 @@ class PTv3:
             """
 
         env = os.environ.copy()
+        env["PYTHONPATH"] = "models/pointcept"
         env["CUDA_VISIBLE_DEVICES"] = ",".join(pick_available_gpus())
         process = subprocess.run(
-            f'export PYTHONPATH=models/pointcept && bash -c "{self.__append_environment(command)}"',
+            f'bash -c "{self.__append_environment(command)}"',
             text=True,
             shell=True,
             capture_output=True,
