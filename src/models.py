@@ -2,6 +2,7 @@ import asyncio
 import os
 import subprocess
 
+from typing import Dict
 from utils import pick_available_gpus, parse_command
 
 assets_path = "assets"
@@ -19,7 +20,7 @@ class Model:
         self.conda_env = conda_env
         self.model_path = model_path
 
-    def __run_command(self, command: str, env: dict[str, str]):
+    def __run_command(self, command: str, env: Dict[str, str]):
         env = os.environ.copy()
         env["CUDA_VISIBLE_DEVICES"] = ",".join(pick_available_gpus())
 
