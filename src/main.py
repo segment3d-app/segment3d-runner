@@ -28,11 +28,17 @@ class PatchError(Exception):
 
 
 async def process_task(message: AbstractIncomingMessage):
-    logging.info("Received message: %s", message.body)
+    logging.info("Received message: %s")
 
     # ==== Parse message and create model instances
 
     data = json.loads(message.body.decode())
+
+    logging.info(f"└- Asset ID: {data["asset_id"]}")
+    logging.info(f"└- Asset type: {data["type"]}")
+    logging.info(f"└- Photos URL: {data["photo_dir_url"]}")
+    if "point_cloud_url" in data:
+        logging.info(f"└- Point cloud URL: {data["point_cloud_url"]}")
 
     asset_type = data["type"]
     asset = Asset(
