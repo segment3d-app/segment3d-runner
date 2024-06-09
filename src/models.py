@@ -31,7 +31,7 @@ class Model:
             env[key] = value
 
         command = self.__append_environment(parse_command(command))
-        process = subprocess.run(
+        process = subprocess.Popen(
             f'bash -c "{command}"',
             text=True,
             shell=True,
