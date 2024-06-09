@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import os
 import subprocess
 
@@ -20,7 +21,9 @@ class Model:
         self.conda_env = conda_env
         self.model_path = model_path
 
-    def run_command(self, command: str, environment: Dict[str, str] = dict()):
+    def run_command(
+        self, command: str, environment: Dict[str, str] = dict(), show_output=False
+    ):
         env = os.environ.copy()
         env["CUDA_VISIBLE_DEVICES"] = ",".join(pick_available_gpus())
 
@@ -28,13 +31,22 @@ class Model:
             env[key] = value
 
         command = self.__append_environment(parse_command(command))
-        process = subprocess.run(
+        process = subprocess.Popen(
             f'bash -c "{command}"',
             text=True,
-            shell=True,
-            capture_output=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            # shell=True,
+            # capture_output=True,
             env=env,
         )
+
+        if show_output:
+            for line in iter(process.stdout.readline, ""):
+                logging.info(line.strip())
+
+        process.stdout.close()
+        process.wait()
 
         return process
 
@@ -186,7 +198,7 @@ class PTv3(Model):
             --num-gpus 2
         """
 
-        process = self.run_command(command, {"PYTHONPATH": "models/pointcept"})
+        process = self.run_command(command, {"PYTHONPATH": "models/pointcept"}, True)
         if process.returncode != 0:
             raise PTv3InferenceError(process.stderr)
 
