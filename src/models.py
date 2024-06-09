@@ -36,7 +36,7 @@ class Model:
             text=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
-            # shell=True,
+            shell=True,
             # capture_output=True,
             env=env,
         )
