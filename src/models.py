@@ -5,11 +5,11 @@ import subprocess
 from typing import Dict
 from utils import pick_available_gpus, parse_command
 
-assets_path = "assets"
 conda_source = "/opt/conda/etc/profile.d/conda.sh"
 
 
 class Model:
+    assets_path = "assets"
     model_path = ""
     conda_env = ""
 
