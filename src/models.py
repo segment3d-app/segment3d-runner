@@ -47,7 +47,7 @@ class Model:
         returncode = process.wait()
         _, stderr = process.communicate()
 
-        return {"returncode": returncode, "stderr": stderr}
+        return returncode, stderr
 
     def __append_environment(self, command: str):
         return f"source {conda_source} && conda activate {self.conda_env} && {command} && conda deactivate"
@@ -87,9 +87,9 @@ class GaussianSplatting(Model):
             -s {os.path.join(self.assets_path, self.asset_id)}
         """
 
-        process = self.run_command(command)
-        if process.returncode != 0:
-            raise ColmapError(process.stderr)
+        returncode, stderr = self.run_command(command)
+        if returncode != 0:
+            raise ColmapError(stderr)
 
     def __convert_pointcloud(self):
         command = f"""
@@ -99,9 +99,9 @@ class GaussianSplatting(Model):
             --output_type PLY
         """
 
-        process = self.run_command(command)
-        if process.returncode != 0:
-            raise ColmapError(process.stderr)
+        returncode, stderr = self.run_command(command)
+        if returncode != 0:
+            raise ColmapError(stderr)
 
     def __generate_gaussian(self):
         command = f"""
@@ -111,9 +111,9 @@ class GaussianSplatting(Model):
             --iterations 7000
         """
 
-        process = self.run_command(command)
-        if process.returncode != 0:
-            raise GaussianSplattingError(process.stderr)
+        returncode, stderr = self.run_command(command)
+        if returncode != 0:
+            raise GaussianSplattingError(stderr)
 
 
 class PTv3ConvertError(Exception):
@@ -168,9 +168,9 @@ class PTv3(Model):
             -n scene
         """
 
-        process = self.run_command(command)
-        if process.returncode != 0:
-            raise PTv3ConvertError(process.stderr)
+        returncode, stderr = self.run_command(command)
+        if returncode != 0:
+            raise PTv3ConvertError(stderr)
 
     def __preprocess(self):
         command = f"""python {os.path.join(self.model_path, "preprocess.py")}
@@ -178,9 +178,9 @@ class PTv3(Model):
             --output_root {os.path.join(self.asset_path, "data/scene")}
         """
 
-        process = self.run_command(command)
-        if process.returncode != 0:
-            raise PTv3PreprocessError(process.stderr)
+        returncode, stderr = self.run_command(command)
+        if returncode != 0:
+            raise PTv3PreprocessError(stderr)
 
     def __infer(self):
         options = {
@@ -199,7 +199,7 @@ class PTv3(Model):
 
         process = self.run_command(command, {"PYTHONPATH": "models/pointcept"}, True)
         if process.returncode != 0:
-            raise PTv3InferenceError(process.stderr)
+            raise PTv3InferenceError(stderr)
 
     def __reconstruct(self):
         command = f"""python {os.path.join(self.model_path, "convert_npy.py")}
@@ -211,4 +211,4 @@ class PTv3(Model):
 
         process = self.run_command(command, {"PYTHONPATH": "models/pointcept"})
         if process.returncode != 0:
-            raise PTv3ReconstructionError(process.stderr)
+            raise PTv3ReconstructionError(stderr)
