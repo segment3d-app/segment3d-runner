@@ -105,6 +105,7 @@ async def unzip_asset(asset: Asset):
 async def generate_pointcloud(asset: Asset, gaussian_splatting: GaussianSplatting):
     if asset.exists("sparse/0/pointcloud.ply"):
         logging.info(f"[SKIPPED] Generating pointcloud for asset {asset.asset_id}")
+        return
 
     logging.info(f"Generating pointcloud for asset {asset.asset_id}...")
     start_time = time.time()
@@ -152,6 +153,7 @@ async def generate_pointcloud(asset: Asset, gaussian_splatting: GaussianSplattin
 async def generate_gaussian(asset: Asset, gaussian_splatting: GaussianSplatting):
     if asset.exists("output/point_cloud/iteration_7000/scene_point_cloud.ply"):
         logging.info(f"[SKIPPED] Generating gaussian for asset {asset.asset_id}")
+        return
 
     logging.info(f"Generating gaussian for asset {asset.asset_id}...")
     start_time = time.time()
@@ -203,6 +205,7 @@ async def generate_gaussian(asset: Asset, gaussian_splatting: GaussianSplatting)
 async def process_ptv3(asset: Asset, ptv3: PTv3):
     if asset.exists("segmentation/ptv3.ply"):
         logging.info(f"[SKIPPED] Processing PTv3 for asset {asset.asset_id}")
+        return
 
     logging.info(f"Processing PTv3 for asset {asset.asset_id}...")
 
