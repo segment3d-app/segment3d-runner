@@ -31,24 +31,23 @@ class Model:
             env[key] = value
 
         command = self.__append_environment(parse_command(command))
-        process = subprocess.Popen(
+        process = subprocess.run(
             f'bash -c "{command}"',
             text=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
             shell=True,
-            # capture_output=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
             env=env,
         )
 
         if show_output:
-            for line in iter(process.stdout.readline, ""):
+            for line in iter(process.stdout.readline, b""):
                 logging.info(line.strip())
 
-        process.stdout.close()
-        process.wait()
+        returncode = process.wait()
+        _, stderr = process.communicate()
 
-        return process
+        return {"returncode": returncode, "stderr": stderr}
 
     def __append_environment(self, command: str):
         return f"source {conda_source} && conda activate {self.conda_env} && {command} && conda deactivate"
