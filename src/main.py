@@ -62,7 +62,7 @@ async def process_task(message: AbstractIncomingMessage):
         await process_ptv3(asset, ptv3)
 
     except:
-        logging.error()
+        logging.error("")
         message.nack()
         return
 
