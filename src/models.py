@@ -68,7 +68,7 @@ class GaussianSplatting(Model):
         await asyncio.get_event_loop().run_in_executor(None, self.__generate_pointcloud)
         await asyncio.get_event_loop().run_in_executor(None, self.__convert_pointcloud)
 
-    async def generate_gaussian_splatting(self):
+    async def generate_gaussian(self):
         await asyncio.get_event_loop().run_in_executor(None, self.__generate_gaussian)
 
     def __generate_pointcloud(self):
