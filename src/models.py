@@ -186,7 +186,7 @@ class PTv3:
 
         # ==========
 
-        if not Path(self.asset_path, "scene/result/scene.npy").exists():
+        if not Path(self.asset_path, "data/result/scene.npy").exists():
             logging.info(f"Inferring segmentation for asset {self.asset_id}...")
 
             start_time = time.time()
