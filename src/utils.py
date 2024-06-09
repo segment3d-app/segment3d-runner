@@ -22,3 +22,7 @@ def pick_available_gpus(count=2):
 
     pynvml.nvmlShutdown()
     return gpus
+
+
+def parse_command(command: str):
+    return " ".join([line.strip() for line in command.split("\n") if line.strip()])
