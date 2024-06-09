@@ -20,7 +20,7 @@ class Model:
         self.conda_env = conda_env
         self.model_path = model_path
 
-    def __run_command(self, command: str, env: Dict[str, str]):
+    def run_command(self, command: str, env: Dict[str, str]):
         env = os.environ.copy()
         env["CUDA_VISIBLE_DEVICES"] = ",".join(pick_available_gpus())
 
@@ -76,7 +76,7 @@ class GaussianSplatting(Model):
             -s {os.path.join(self.assets_path, self.asset_id)}
         """
 
-        process = self.__run_command(command)
+        process = self.run_command(command)
         if process.returncode != 0:
             raise ColmapError(process.stderr)
 
@@ -88,7 +88,7 @@ class GaussianSplatting(Model):
             --output_type PLY
         """
 
-        process = self.__run_command(command)
+        process = self.run_command(command)
         if process.returncode != 0:
             raise ColmapError(process.stderr)
 
@@ -100,7 +100,7 @@ class GaussianSplatting(Model):
             --iterations 7000
         """
 
-        process = self.__run_command(command)
+        process = self.run_command(command)
         if process.returncode != 0:
             raise GaussianSplattingError(process.stderr)
 
@@ -157,7 +157,7 @@ class PTv3(Model):
             -n scene
         """
 
-        process = self.__run_command(command)
+        process = self.run_command(command)
         if process.returncode != 0:
             raise PTv3ConvertError(process.stderr)
 
@@ -167,7 +167,7 @@ class PTv3(Model):
             --output_root {os.path.join(self.asset_path, "data/scene")}
         """
 
-        process = self.__run_command(command)
+        process = self.run_command(command)
         if process.returncode != 0:
             raise PTv3PreprocessError(process.stderr)
 
@@ -186,7 +186,7 @@ class PTv3(Model):
             --num-gpus 2
         """
 
-        process = self.__run_command(command, {"PYTHONPATH": "models/pointcept"})
+        process = self.run_command(command, {"PYTHONPATH": "models/pointcept"})
         if process.returncode != 0:
             raise PTv3InferenceError(process.stderr)
 
@@ -198,6 +198,6 @@ class PTv3(Model):
             --name ptv3
         """
 
-        process = self.__run_command(command, {"PYTHONPATH": "models/pointcept"})
+        process = self.run_command(command, {"PYTHONPATH": "models/pointcept"})
         if process.returncode != 0:
             raise PTv3ReconstructionError(process.stderr)
