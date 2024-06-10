@@ -1,5 +1,4 @@
 import asyncio
-import logging
 import os
 import subprocess
 
@@ -21,33 +20,23 @@ class Model:
         self.conda_env = conda_env
         self.model_path = model_path
 
-    def run_command(
-        self, command: str, environment: Dict[str, str] = dict(), show_output=False
-    ):
+    def run_command(self, command: str, env: Dict[str, str] = dict()):
         env = os.environ.copy()
         env["CUDA_VISIBLE_DEVICES"] = ",".join(pick_available_gpus())
 
-        for key, value in environment.items():
+        for key, value in env.items():
             env[key] = value
 
         command = self.__append_environment(parse_command(command))
-        process = subprocess.Popen(
+        process = subprocess.run(
             f'bash -c "{command}"',
             text=True,
             shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            capture_output=True,
             env=env,
         )
 
-        if show_output:
-            for line in iter(process.stdout.readline, b""):
-                logging.info(line.strip())
-
-        returncode = process.wait()
-        _, stderr = process.communicate()
-
-        return returncode, stderr
+        return process
 
     def __append_environment(self, command: str):
         return f"source {conda_source} && conda activate {self.conda_env} && {command} && conda deactivate"
@@ -87,9 +76,9 @@ class GaussianSplatting(Model):
             -s {os.path.join(self.assets_path, self.asset_id)}
         """
 
-        returncode, stderr = self.run_command(command)
-        if returncode != 0:
-            raise ColmapError(stderr)
+        process = self.run_command(command)
+        if process.returncode != 0:
+            raise ColmapError(process.stderr)
 
     def __convert_pointcloud(self):
         command = f"""
@@ -99,9 +88,9 @@ class GaussianSplatting(Model):
             --output_type PLY
         """
 
-        returncode, stderr = self.run_command(command)
-        if returncode != 0:
-            raise ColmapError(stderr)
+        process = self.run_command(command)
+        if process.returncode != 0:
+            raise ColmapError(process.stderr)
 
     def __generate_gaussian(self):
         command = f"""
@@ -111,9 +100,9 @@ class GaussianSplatting(Model):
             --iterations 7000
         """
 
-        returncode, stderr = self.run_command(command)
-        if returncode != 0:
-            raise GaussianSplattingError(stderr)
+        process = self.run_command(command)
+        if process.returncode != 0:
+            raise GaussianSplattingError(process.stderr)
 
 
 class PTv3ConvertError(Exception):
@@ -168,9 +157,9 @@ class PTv3(Model):
             -n scene
         """
 
-        returncode, stderr = self.run_command(command)
-        if returncode != 0:
-            raise PTv3ConvertError(stderr)
+        process = self.run_command(command)
+        if process.returncode != 0:
+            raise PTv3ConvertError(process.stderr)
 
     def __preprocess(self):
         command = f"""python {os.path.join(self.model_path, "preprocess.py")}
@@ -178,9 +167,9 @@ class PTv3(Model):
             --output_root {os.path.join(self.asset_path, "data/scene")}
         """
 
-        returncode, stderr = self.run_command(command)
-        if returncode != 0:
-            raise PTv3PreprocessError(stderr)
+        process = self.run_command(command)
+        if process.returncode != 0:
+            raise PTv3PreprocessError(process.stderr)
 
     def __infer(self):
         options = {
@@ -197,9 +186,9 @@ class PTv3(Model):
             --num-gpus 2
         """
 
-        returncode, stderr = self.run_command(command, {"PYTHONPATH": "models/pointcept"}, True)
-        if returncode != 0:
-            raise PTv3InferenceError(stderr)
+        process = self.run_command(command, {"PYTHONPATH": "models/pointcept"})
+        if process.returncode != 0:
+            raise PTv3InferenceError(process.stderr)
 
     def __reconstruct(self):
         command = f"""python {os.path.join(self.model_path, "convert_npy.py")}
@@ -209,6 +198,6 @@ class PTv3(Model):
             --name ptv3
         """
 
-        returncode, stderr = self.run_command(command, {"PYTHONPATH": "models/pointcept"})
-        if returncode != 0:
-            raise PTv3ReconstructionError(stderr)
+        process = self.run_command(command, {"PYTHONPATH": "models/pointcept"})
+        if process.returncode != 0:
+            raise PTv3ReconstructionError(process.stderr)
