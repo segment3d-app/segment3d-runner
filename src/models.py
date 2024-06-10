@@ -20,11 +20,11 @@ class Model:
         self.conda_env = conda_env
         self.model_path = model_path
 
-    def run_command(self, command: str, env: Dict[str, str] = dict()):
+    def run_command(self, command: str, environment: Dict[str, str] = dict()):
         env = os.environ.copy()
         env["CUDA_VISIBLE_DEVICES"] = ",".join(pick_available_gpus())
 
-        for key, value in env.items():
+        for key, value in environment.items():
             env[key] = value
 
         command = self.__append_environment(parse_command(command))
