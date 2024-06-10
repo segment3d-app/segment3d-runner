@@ -69,8 +69,7 @@ async def process_task(message: AbstractIncomingMessage):
 
     except:
         logging.error("")
-        message.nack()
-        return
+        await message.nack()
 
     # asset.clear()
     # await message.ack()
