@@ -28,7 +28,7 @@ class PatchError(Exception):
 
 
 async def process_task(message: AbstractIncomingMessage):
-    logging.info("Received message: %s")
+    logging.info("Received message:")
 
     # ==== Parse message and create model instances
 
@@ -237,38 +237,38 @@ async def process_ptv3(asset: Asset, ptv3: PTv3):
         duration = time.time() - start_time
         logging.info(f"└--- PTv3 preprocessed successfully in {duration:.2f} seconds")
 
-        # # Inferrence
-        # logging.info(f"└- Inferring PTv3...")
-        # start_time = time.time()
-        # await ptv3.infer()
+        # Inferrence
+        logging.info(f"└- Inferring PTv3...")
+        start_time = time.time()
+        await ptv3.infer()
 
-        # if not asset.exists("data/result/scene.npy"):
-        #     raise PTv3InferenceError("scene.npy not found")
+        if not asset.exists("data/result/scene.npy"):
+            raise PTv3InferenceError("scene.npy not found")
 
-        # duration = time.time() - start_time
-        # logging.info(f"└--- PTv3 inferred successfully in {duration:.2f} seconds")
+        duration = time.time() - start_time
+        logging.info(f"└--- PTv3 inferred successfully in {duration:.2f} seconds")
 
-        # # Reconstruction
-        # logging.info(f"└- Reconstructing PTv3...")
-        # start_time = time.time()
-        # await ptv3.reconstruct()
+        # Reconstruction
+        logging.info(f"└- Reconstructing PTv3...")
+        start_time = time.time()
+        await ptv3.reconstruct()
 
-        # if not asset.exists("segmentation/ptv3.ply"):
-        #     raise PTv3ReconstructionError("ptv3.ply not found")
+        if not asset.exists("segmentation/ptv3.ply"):
+            raise PTv3ReconstructionError("ptv3.ply not found")
 
-        # duration = time.time() - start_time
-        # logging.info(f"└--- PTv3 reconstructed successfully in {duration:.2f} seconds")
+        duration = time.time() - start_time
+        logging.info(f"└--- PTv3 reconstructed successfully in {duration:.2f} seconds")
 
-        # # Upload and patch result
-        # ptv3_url = await asset.upload("segmentation/ptv3.ply", "ptv3.ply")
-        # response = requests.patch(
-        #     f"{api_root}/assets/ptv3/{asset.asset_id}",
-        #     headers={"Content-Type": "application/json"},
-        #     data=json.dumps({"url": ptv3_url}),
-        # )
+        # Upload and patch result
+        ptv3_url = await asset.upload("segmentation/ptv3.ply", "ptv3.ply")
+        response = requests.patch(
+            f"{api_root}/assets/ptv3/{asset.asset_id}",
+            headers={"Content-Type": "application/json"},
+            data=json.dumps({"url": ptv3_url}),
+        )
 
-        # if response.status_code != 200:
-        #     raise PatchError(response.reason)
+        if response.status_code != 200:
+            raise PatchError(response.reason)
 
     except PTv3ConvertError as e:
         logging.error(f"└- Failed converting PTv3:")
