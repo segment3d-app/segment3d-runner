@@ -14,7 +14,7 @@ def pick_available_gpus(count=2):
         memory_usage = memory_info.used / memory_info.total / 100
         compute_usage = compute_util.gpu / 100
 
-        weighted_score = (0.25 * memory_usage) + (0.75 * compute_usage)
+        weighted_score = (0.6 * memory_usage) + (0.4 * compute_usage)
         usage_info.append((i, weighted_score))
 
     usage_info.sort(key=lambda x: x[1])
