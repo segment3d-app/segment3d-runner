@@ -173,12 +173,13 @@ class PTv3(Model):
 
     def __infer(self):
         options = {
+            "num_worker": 4,
+            "empty_cache": True,
             "weight": os.path.join(self.model_path, "models/ptv3/model/model_best.pth"),
             "save_path": os.path.join(self.asset_path, "data"),
             "data_root": os.path.join(self.asset_path, "data/scene"),
             "data.test.data_root": os.path.join(self.asset_path, "data/scene"),
             "data.test.test_cfg.voxelize.grid_size": 0.1,
-            "num_worker": 2,
         }
 
         command = f"""python {os.path.join(self.model_path, "tools/pred.py")}
