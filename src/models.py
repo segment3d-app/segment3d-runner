@@ -193,7 +193,7 @@ class PTv3(Model):
     def __reconstruct(self):
         command = f"""python {os.path.join(self.model_path, "convert_npy.py")}
             --gaussian {os.path.join(self.asset_path, "output/point_cloud/iteration_7000/scene_point_cloud.ply")}
-            --scene {os.path.join(self.asset_path, "scene/result/scene.npy")}
+            --scene {os.path.join(self.asset_path, "data/result/scene.npy")}
             --destination {os.path.join(self.asset_path, "segmentation")}
             --name ptv3
         """
