@@ -197,8 +197,8 @@ class PTv3(Model):
             --num-gpus 2
         """
 
-        process = self.run_command(command, {"PYTHONPATH": "models/pointcept"}, True)
-        if process.returncode != 0:
+        returncode, stderr = self.run_command(command, {"PYTHONPATH": "models/pointcept"}, True)
+        if returncode != 0:
             raise PTv3InferenceError(stderr)
 
     def __reconstruct(self):
@@ -209,6 +209,6 @@ class PTv3(Model):
             --name ptv3
         """
 
-        process = self.run_command(command, {"PYTHONPATH": "models/pointcept"})
-        if process.returncode != 0:
+        returncode, stderr = self.run_command(command, {"PYTHONPATH": "models/pointcept"})
+        if returncode != 0:
             raise PTv3ReconstructionError(stderr)
