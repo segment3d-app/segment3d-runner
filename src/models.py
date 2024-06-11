@@ -201,3 +201,82 @@ class PTv3(Model):
         process = self.run_command(command, {"PYTHONPATH": "models/pointcept"})
         if process.returncode != 0:
             raise PTv3ReconstructionError(process.stderr)
+
+
+class SagaExtractFeaturesError(Exception):
+    pass
+
+
+class SagaExtractMasksError(Exception):
+    pass
+
+
+class SagaTrainSceneError(Exception):
+    pass
+
+
+class SagaTrainFeaturesError(Exception):
+    pass
+
+
+class Saga(Model):
+    def __init__(self, asset_id: str, asset_type: str):
+        Model.__init__(
+            self,
+            asset_id=asset_id,
+            asset_type=asset_type,
+            conda_env="saga",
+            model_path="models/saga",
+        )
+
+        self.asset_path = os.path.join(self.assets_path, asset_id)
+
+    async def extract_features(self):
+        await asyncio.get_event_loop().run_in_executor(None, self.__extract_features)
+
+    async def extract_masks(self):
+        await asyncio.get_event_loop().run_in_executor(None, self.__extract_masks)
+
+    async def train_scene(self):
+        await asyncio.get_event_loop().run_in_executor(None, self.__train_scene)
+
+    async def train_features(self):
+        await asyncio.get_event_loop().run_in_executor(None, self.__train_features)
+
+    def __extract_features(self):
+        command = f"""python {os.path.join(self.model_path, "extract_features.py")}
+            --sam_checkpoint_path {os.path.join(self.model_path, "sam.pth")}
+            --image_root {self.asset_path}
+        """
+
+        process = self.run_command(command)
+        if process.returncode != 0:
+            raise SagaExtractFeaturesError(process.stderr)
+
+    def __extract_masks(self):
+        command = f"""python {os.path.join(self.model_path, "extract_segment_everything_masks.py")}
+            --sam_checkpoint_path {os.path.join(self.model_path, "sam.pth")}
+            --image_root {self.asset_path}
+        """
+
+        process = self.run_command(command)
+        if process.returncode != 0:
+            raise SagaExtractMasksError(process.stderr)
+
+    def __train_scene(self):
+        command = f"""python {os.path.join(self.model_path, "train_scene.py")}
+            -s {self.asset_path}
+        """
+
+        process = self.run_command(command)
+        if process.returncode != 0:
+            raise SagaTrainSceneError(process.stderr)
+
+    def __train_features(self):
+        command = f"""python {os.path.join(self.model_path, "train_contrastive_feature.py")}
+            -m output/*
+        """
+
+        process = self.run_command(command)
+        if process.returncode != 0:
+            raise SagaTrainFeaturesError(process.stderr)

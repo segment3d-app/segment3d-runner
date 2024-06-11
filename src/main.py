@@ -11,7 +11,7 @@ from aio_pika import connect_robust
 from aio_pika.abc import AbstractIncomingMessage
 
 from assets import Asset, AssetUploadError
-from models import (
+from .models import (
     ColmapError,
     GaussianSplatting,
     GaussianSplattingError,
@@ -20,6 +20,11 @@ from models import (
     PTv3InferenceError,
     PTv3PreprocessError,
     PTv3ReconstructionError,
+    Saga,
+    SagaExtractFeaturesError,
+    SagaExtractMasksError,
+    SagaTrainFeaturesError,
+    SagaTrainSceneError,
 )
 
 
@@ -49,6 +54,7 @@ async def process_task(message: AbstractIncomingMessage):
     )
 
     ptv3 = PTv3(asset_id=asset.asset_id, asset_type=asset_type)
+    saga = Saga(asset_id=asset.asset_id, asset_type=asset_type)
     gaussian_splatting = GaussianSplatting(
         asset_id=asset.asset_id, asset_type=asset_type
     )
@@ -65,7 +71,10 @@ async def process_task(message: AbstractIncomingMessage):
         await generate_gaussian(asset, gaussian_splatting)
 
         # Process PTv3
-        await process_ptv3(asset, ptv3)
+        # await process_ptv3(asset, ptv3)
+
+        # Process SAGA
+        await process_saga(asset, saga)
 
     except:
         logging.error("")
@@ -309,6 +318,72 @@ async def process_ptv3(asset: Asset, ptv3: PTv3):
     logging.info(f"└- PTv3 processed successfully in {duration:.2f} seconds")
 
 
+async def process_saga(asset: Asset, saga: Saga):
+    logging.info(f"Processing SAGA for asset {asset.asset_id}...")
+    start_time = time.time()
+
+    try:
+        # Extract features
+        logging.info(f"└- Extracting features...")
+        start_time = time.time()
+        await saga.extract_features()
+
+        duration = time.time() - start_time
+        logging.info(f"└--- Features extracted successfully in {duration:.2f} seconds")
+
+        # Extract masks
+        logging.info(f"└- Extracting masks...")
+        start_time = time.time()
+        await saga.extract_masks()
+
+        duration = time.time() - start_time
+        logging.info(f"└--- Masks extracted successfully in {duration:.2f} seconds")
+
+        # Train scene
+        logging.info(f"└- Training scene...")
+        start_time = time.time()
+        await saga.train_scene()
+
+        duration = time.time() - start_time
+        logging.info(f"└--- Scene trained successfully in {duration:.2f} seconds")
+
+        # Train scene
+        logging.info(f"└- Training features...")
+        start_time = time.time()
+        await saga.train_features()
+
+        duration = time.time() - start_time
+        logging.info(f"└--- Features trained successfully in {duration:.2f} seconds")
+
+    except SagaExtractFeaturesError as e:
+        logging.error(f"└- Failed extracting features:")
+        logging.error(e.args[0])
+        raise Exception()
+    
+    except SagaExtractMasksError as e:
+        logging.error(f"└- Failed extracting masks:")
+        logging.error(e.args[0])
+        raise Exception()
+    
+    except SagaTrainSceneError as e:
+        logging.error(f"└- Failed training scene:")
+        logging.error(e.args[0])
+        raise Exception()
+    
+    except SagaTrainFeaturesError as e:
+        logging.error(f"└- Failed training features:")
+        logging.error(e.args[0])
+        raise Exception()
+    
+    except Exception as e:
+        logging.error(f"└- Unknown error when processing SAGA:")
+        logging.error(str(e))
+        raise Exception()
+
+    duration = time.time() - start_time
+    logging.info(f"└- SAGA processed successfully in {duration:.2f} seconds")
+
+
 async def main():
     connection = await connect_robust(
         host=os.getenv("RABBITMQ_HOST"),
@@ -320,10 +395,14 @@ async def main():
     channel = await connection.channel()
     await channel.set_qos(prefetch_count=1)
 
-    queue_name = os.getenv("RABBITMQ_QUEUE")
-    queue = await channel.declare_queue(queue_name, durable=True)
+    process_queue_name = os.getenv("RABBITMQ_QUEUE_PROCESS")
+    process_queue = await channel.declare_queue(process_queue_name, durable=True)
 
-    await queue.consume(process_task)
+    saga_queue_name = os.getenv("RABBITMQ_QUEUE_SAGA")
+    saga_queue = await channel.declare_queue(saga_queue_name, durable=True)
+
+    await process_queue.consume(process_task)
+    await saga_queue.consume(lambda x: 1)
 
     try:
         logging.info("Listening for messages. Press CTRL+C to exit.")
