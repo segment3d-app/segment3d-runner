@@ -53,6 +53,34 @@ class Asset:
 
         return response.json()["url"][0]
 
+    async def upload_folder(self, source_folder: str, target_folder: str):
+        loop = asyncio.get_event_loop()
+        upload_tasks = []
+
+        source_folder_path = os.path.join("assets", self.asset_id, source_folder)
+        for root, _, files in os.walk(source_folder_path):
+            for file in files:
+                source_path = os.path.join(root, file)
+                relative_path = os.path.relpath(source_path, source_folder_path)
+                target_path = os.path.join(target_folder, relative_path).replace(
+                    os.sep, "/"
+                )
+
+                upload_tasks.append(
+                    loop.run_in_executor(
+                        self.executor, self.__upload, source_path, target_path
+                    )
+                )
+
+        responses = await asyncio.gather(*upload_tasks)
+        for response in responses:
+            if response.status_code != 200:
+                raise AssetUploadError(response.reason)
+
+        return f"files/{self.asset_id}/{target_folder}", [
+            response.json()["url"] for response in responses
+        ]
+
     def clear(self):
         shutil.rmtree(self.asset_path)
 
