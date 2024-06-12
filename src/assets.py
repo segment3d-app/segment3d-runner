@@ -1,9 +1,9 @@
 import asyncio
+import mimetypes
 import os
 import requests
 import shutil
 import zipfile
-import logging
 
 from pathlib import Path
 from urllib import parse, request
@@ -68,7 +68,7 @@ class Asset:
                 )
 
                 response = await asyncio.get_event_loop().run_in_executor(
-                    None, self.__upload, source_path, target_path
+                    None, self.__upload, source_path, target_path, type
                 )
 
                 if response.status_code != 200:
@@ -96,7 +96,9 @@ class Asset:
 
     def __upload(self, source_path: str, target_path: str):
         source = os.path.join("assets", self.asset_id, source_path)
+        mime_type, _ = mimetypes.guess_type(source)
+
         with open(source, "rb") as file:
-            files = {"file": (target_path, file)}
+            files = {"file": (target_path, file, mime_type)}
             data = {"folder": self.asset_id}
             return requests.post(f"{self.storage_root}/upload", data=data, files=files)
