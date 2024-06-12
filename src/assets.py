@@ -67,9 +67,7 @@ class Asset:
                 )
 
                 upload_tasks.append(
-                    loop.run_in_executor(
-                        self.executor, self.__upload, source_path, target_path
-                    )
+                    loop.run_in_executor(None, self.__upload, source_path, target_path)
                 )
 
         responses = await asyncio.gather(*upload_tasks)
