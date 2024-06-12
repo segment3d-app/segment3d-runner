@@ -58,16 +58,15 @@ class Asset:
         upload_tasks = []
 
         source_folder_path = os.path.join("assets", self.asset_id, source_folder)
-        for root, _, files in os.walk(source_folder_path):
+        for _, _, files in os.walk(source_folder_path):
             for file in files:
-                source_path = os.path.join(root, file)
-                relative_path = os.path.relpath(source_path, source_folder_path)
+                relative_path = os.path.relpath(file, source_folder_path)
                 target_path = os.path.join(target_folder, relative_path).replace(
                     os.sep, "/"
                 )
 
                 upload_tasks.append(
-                    loop.run_in_executor(None, self.__upload, source_path, target_path)
+                    loop.run_in_executor(None, self.__upload, file, target_path)
                 )
 
         responses = await asyncio.gather(*upload_tasks)
