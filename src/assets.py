@@ -59,9 +59,9 @@ class Asset:
         upload_tasks = []
 
         source_folder_path = os.path.join(self.asset_path, source_folder)
-        for root, _, files in os.walk(source_folder_path):
+        for _, _, files in os.walk(source_folder_path):
             for file in files:
-                source_path = os.path.join(root, file)
+                source_path = os.path.join(source_folder, file)
                 relative_path = os.path.relpath(file, source_folder_path)
                 target_path = os.path.join(target_folder, relative_path).replace(
                     os.sep, "/"
