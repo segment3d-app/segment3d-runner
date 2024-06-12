@@ -22,11 +22,14 @@ class Asset:
         self.asset_id = asset_id
         self.asset_path = os.path.join(self.assets_path, self.asset_id)
 
-        self.images_url = f"{storage_root}{parse.quote(images_path)}?isDownload=true"
-        self.zip_path = f"{self.asset_path}.zip"
-        self.dir_path = f"{self.asset_path}/input"
+        if images_path is not None:
+            self.images_url = (
+                f"{storage_root}{parse.quote(images_path)}?isDownload=true"
+            )
+            self.zip_path = f"{self.asset_path}.zip"
+            self.dir_path = f"{self.asset_path}/input"
 
-        os.makedirs(self.dir_path, exist_ok=True)
+            os.makedirs(self.dir_path, exist_ok=True)
 
         if pcl_path is not None:
             self.pcl_url = f"{storage_root}{parse.quote(pcl_path)}?isDownload=true"
@@ -99,6 +102,7 @@ class Asset:
 
     def __upload(self, source_path: str, target_path: str):
         source = os.path.join("assets", self.asset_id, source_path)
-        files = {"file": (target_path, open(source, "rb"))}
-        data = {"folder": self.asset_id}
-        return requests.post(f"{self.storage_root}/upload", data=data, files=files)
+        with open(source, "rb") as file:
+            files = {"file": (target_path, file)}
+            data = {"folder": self.asset_id}
+            return requests.post(f"{self.storage_root}/upload", data=data, files=files)
