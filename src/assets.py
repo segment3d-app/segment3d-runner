@@ -68,7 +68,7 @@ class Asset:
                 )
 
                 response = await asyncio.get_event_loop().run_in_executor(
-                    None, self.__upload, source_path, target_path, type
+                    None, self.__upload, source_path, target_path
                 )
 
                 if response.status_code != 200:
