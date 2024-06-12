@@ -404,7 +404,7 @@ async def process_saga(asset: Asset, saga: Saga):
         # logging.info(f"└--- Features trained successfully in {duration:.2f} seconds")
 
         # Upload result
-        folder_url, _ = await asset.upload_folder("images", "saga")
+        folder_url = await asset.upload_folder("images", "saga")
         response = requests.patch(
             f"{api_root}/assets/saga/{asset.asset_id}",
             headers={"Content-Type": "application/json"},

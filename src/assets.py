@@ -58,8 +58,8 @@ class Asset:
         return response.json()["url"][0]
 
     async def upload_folder(self, source_folder: str, target_folder: str):
-        loop = asyncio.get_event_loop()
-        upload_tasks = []
+        # loop = asyncio.get_event_loop()
+        # upload_tasks = []
 
         source_folder_path = os.path.join(self.asset_path, source_folder)
         for _, _, files in os.walk(source_folder_path):
@@ -70,18 +70,18 @@ class Asset:
                     os.sep, "/"
                 )
 
-                upload_tasks.append(
-                    loop.run_in_executor(None, self.__upload, source_path, target_path)
-                )
+                self.__upload(source_path, target_path)
 
-        responses = await asyncio.gather(*upload_tasks)
-        for response in responses:
-            if response.status_code != 200:
-                raise AssetUploadError(response.reason)
+                # upload_tasks.append(
+                    # loop.run_in_executor(None, self.__upload, source_path, target_path)
+                # )
 
-        return f"files/{self.asset_id}/{target_folder}", [
-            response.json()["url"] for response in responses
-        ]
+        # responses = await asyncio.gather(*upload_tasks)
+        # for response in responses:
+            # if response.status_code != 200:
+                # raise AssetUploadError(response.reason)
+
+        return f"files/{self.asset_id}/{target_folder}"
 
     def clear(self):
         shutil.rmtree(self.asset_path)
@@ -104,13 +104,6 @@ class Asset:
     def __upload(self, source_path: str, target_path: str):
         source = os.path.join("assets", self.asset_id, source_path)
         with open(source, "rb") as file:
-
-            file_content = file.read()
-            if not file_content:
-                logging.info(f"File {source} is empty or could not be read.")
-            else:
-                logging.info(f"File {source} read successfully, size: {len(file_content)} bytes")
-
             files = {"file": (target_path, file)}
             data = {"folder": self.asset_id}
             return requests.post(f"{self.storage_root}/upload", data=data, files=files)
