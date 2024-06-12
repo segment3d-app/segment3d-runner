@@ -266,6 +266,8 @@ class Saga(Model):
     def __train_scene(self):
         command = f"""python {os.path.join(self.model_path, "train_scene.py")}
             -s {self.asset_path}
+            --model_path {os.path.join(self.asset_path, "saga")}
+            --iterations 7000
         """
 
         process = self.run_command(command)
@@ -274,7 +276,8 @@ class Saga(Model):
 
     def __train_features(self):
         command = f"""python {os.path.join(self.model_path, "train_contrastive_feature.py")}
-            -m output/*
+            -m {os.path.join(self.asset_path, "saga")}
+            --iterations 7000
         """
 
         process = self.run_command(command)

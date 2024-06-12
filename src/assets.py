@@ -3,7 +3,6 @@ import os
 import requests
 import shutil
 import zipfile
-import logging
 
 from pathlib import Path
 from urllib import parse, request
@@ -66,10 +65,6 @@ class Asset:
                 target_path = os.path.join(target_folder, relative_path).replace(
                     os.sep, "/"
                 )
-
-                logging.info(source_path)
-                logging.info(relative_path)
-                logging.info(target_path)
 
                 upload_tasks.append(
                     loop.run_in_executor(None, self.__upload, source_path, target_path)
