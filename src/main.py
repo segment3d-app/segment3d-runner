@@ -222,6 +222,7 @@ async def process_ptv3(asset: Asset, ptv3: PTv3):
         return
 
     logging.info(f"Processing PTv3 for asset {asset.asset_id}...")
+    start_start_time = time.time()
 
     try:
         # Convert
@@ -314,73 +315,98 @@ async def process_ptv3(asset: Asset, ptv3: PTv3):
         logging.error(str(e))
         raise Exception()
 
-    duration = time.time() - start_time
+    duration = time.time() - start_start_time
     logging.info(f"└- PTv3 processed successfully in {duration:.2f} seconds")
 
 
 async def process_saga(asset: Asset, saga: Saga):
     logging.info(f"Processing SAGA for asset {asset.asset_id}...")
-    start_time = time.time()
+    start_start_time = time.time()
 
     try:
-        # Extract features
-        logging.info(f"└- Extracting features...")
-        start_time = time.time()
-        await saga.extract_features()
+        # # Extract features
+        # logging.info(f"└- Extracting features...")
+        # start_time = time.time()
+        # await saga.extract_features()
 
-        duration = time.time() - start_time
-        logging.info(f"└--- Features extracted successfully in {duration:.2f} seconds")
+        # if not asset.exists("features"):
+        #     raise PTv3ConvertError("features/ not found")
 
-        # Extract masks
-        logging.info(f"└- Extracting masks...")
-        start_time = time.time()
-        await saga.extract_masks()
+        # duration = time.time() - start_time
+        # logging.info(f"└--- Features extracted successfully in {duration:.2f} seconds")
 
-        duration = time.time() - start_time
-        logging.info(f"└--- Masks extracted successfully in {duration:.2f} seconds")
+        # # Extract masks
+        # logging.info(f"└- Extracting masks...")
+        # start_time = time.time()
+        # await saga.extract_masks()
 
-        # Train scene
-        logging.info(f"└- Training scene...")
-        start_time = time.time()
-        await saga.train_scene()
+        # if not asset.exists("sam_masks"):
+        #     raise PTv3ConvertError("sam_masks/ not found")
 
-        duration = time.time() - start_time
-        logging.info(f"└--- Scene trained successfully in {duration:.2f} seconds")
+        # duration = time.time() - start_time
+        # logging.info(f"└--- Masks extracted successfully in {duration:.2f} seconds")
 
-        # Train scene
-        logging.info(f"└- Training features...")
-        start_time = time.time()
-        await saga.train_features()
+        # # Train scene
+        # logging.info(f"└- Training scene...")
+        # start_time = time.time()
+        # await saga.train_scene()
 
-        duration = time.time() - start_time
-        logging.info(f"└--- Features trained successfully in {duration:.2f} seconds")
+        # if not asset.exists("saga"):
+        #     raise PTv3ConvertError("saga/ not found")
+
+        # duration = time.time() - start_time
+        # logging.info(f"└--- Scene trained successfully in {duration:.2f} seconds")
+
+        # # Train features
+        # logging.info(f"└- Training features...")
+        # start_time = time.time()
+        # await saga.train_features()
+
+        # duration = time.time() - start_time
+        # logging.info(f"└--- Features trained successfully in {duration:.2f} seconds")
+
+        # Upload result
+        folder_url, _ = await asset.upload_folder("images", "saga")
+        response = requests.patch(
+            f"{api_root}/assets/saga/{asset.asset_id}",
+            headers={"Content-Type": "application/json"},
+            data=json.dumps({"url": folder_url}),
+        )
+
+        if response.status_code != 200:
+            raise PatchError(response.reason)
 
     except SagaExtractFeaturesError as e:
         logging.error(f"└- Failed extracting features:")
         logging.error(e.args[0])
         raise Exception()
-    
+
     except SagaExtractMasksError as e:
         logging.error(f"└- Failed extracting masks:")
         logging.error(e.args[0])
         raise Exception()
-    
+
     except SagaTrainSceneError as e:
         logging.error(f"└- Failed training scene:")
         logging.error(e.args[0])
         raise Exception()
-    
+
     except SagaTrainFeaturesError as e:
         logging.error(f"└- Failed training features:")
         logging.error(e.args[0])
         raise Exception()
-    
+
+    except AssetUploadError as e:
+        logging.error(f"└- Failed uploading SAGA:")
+        logging.error(e.args[0])
+        raise Exception()
+
     except Exception as e:
         logging.error(f"└- Unknown error when processing SAGA:")
         logging.error(str(e))
         raise Exception()
 
-    duration = time.time() - start_time
+    duration = time.time() - start_start_time
     logging.info(f"└- SAGA processed successfully in {duration:.2f} seconds")
 
 
