@@ -23,6 +23,8 @@ from models import (
     Saga,
     SagaExtractFeaturesError,
     SagaExtractMasksError,
+    SagaRenderError,
+    SagaSegmentError,
     SagaTrainFeaturesError,
     SagaTrainSceneError,
 )
@@ -33,7 +35,7 @@ class PatchError(Exception):
 
 
 async def process_task(message: AbstractIncomingMessage):
-    logging.info("Received message:")
+    logging.info("Received process message:")
 
     # ==== Parse message and create model instances
 
@@ -82,6 +84,42 @@ async def process_task(message: AbstractIncomingMessage):
 
     # asset.clear()
     # await message.ack()
+
+
+async def process_saga(message: AbstractIncomingMessage):
+    logging.info("Received SAGA message:")
+
+    # ==== Parse message and create model instances
+
+    data = json.loads(message.body.decode())
+
+    logging.info(f"└- Asset ID: {data['asset_id']}")
+    logging.info(f"└- Segment ID: {data['unique_identifier']}")
+    logging.info(f"└- Photo URL: {data['url']}")
+    logging.info(f"└- X coordinate: {data['x']}")
+    logging.info(f"└- Y coordinate: {data['y']}")
+
+    asset = Asset(
+        storage_root=storage_root,
+        asset_id=data["asset_id"],
+        images_path=None,
+        pcl_path=None,
+    )
+
+    saga = Saga(asset_id=asset.asset_id, asset_type="lidar")
+
+    segment_id = data['unique_identifier']
+    photo_url = data['url']
+    x = data['x']
+    y = data['y']
+
+    try:
+        # Segment SAGA
+        await process_saga(asset, saga)
+
+    except:
+        logging.error("")
+        await message.nack()
 
 
 async def download_asset(asset: Asset):
@@ -325,45 +363,45 @@ async def process_saga(asset: Asset, saga: Saga):
 
     try:
         # Extract features
-        logging.info(f"└- Extracting features...")
-        start_time = time.time()
-        await saga.extract_features()
+        # logging.info(f"└- Extracting features...")
+        # start_time = time.time()
+        # await saga.extract_features()
 
-        if not asset.exists("features"):
-            raise PTv3ConvertError("features/ not found")
+        # if not asset.exists("features"):
+        #     raise SagaExtractFeaturesError("features/ not found")
 
-        duration = time.time() - start_time
-        logging.info(f"└--- Features extracted successfully in {duration:.2f} seconds")
+        # duration = time.time() - start_time
+        # logging.info(f"└--- Features extracted successfully in {duration:.2f} seconds")
 
-        # Extract masks
-        logging.info(f"└- Extracting masks...")
-        start_time = time.time()
-        await saga.extract_masks()
+        # # Extract masks
+        # logging.info(f"└- Extracting masks...")
+        # start_time = time.time()
+        # await saga.extract_masks()
 
-        if not asset.exists("sam_masks"):
-            raise PTv3ConvertError("sam_masks/ not found")
+        # if not asset.exists("sam_masks"):
+        #     raise SagaExtractMasksError("sam_masks/ not found")
 
-        duration = time.time() - start_time
-        logging.info(f"└--- Masks extracted successfully in {duration:.2f} seconds")
+        # duration = time.time() - start_time
+        # logging.info(f"└--- Masks extracted successfully in {duration:.2f} seconds")
 
-        # Train scene
-        logging.info(f"└- Training scene...")
-        start_time = time.time()
-        await saga.train_scene()
+        # # Train scene
+        # logging.info(f"└- Training scene...")
+        # start_time = time.time()
+        # await saga.train_scene()
 
-        if not asset.exists("saga"):
-            raise PTv3ConvertError("saga/ not found")
+        # if not asset.exists("saga"):
+        #     raise SagaTrainSceneError("saga/ not found")
 
-        duration = time.time() - start_time
-        logging.info(f"└--- Scene trained successfully in {duration:.2f} seconds")
+        # duration = time.time() - start_time
+        # logging.info(f"└--- Scene trained successfully in {duration:.2f} seconds")
 
-        # Train features
-        logging.info(f"└- Training features...")
-        start_time = time.time()
-        await saga.train_features()
+        # # Train features
+        # logging.info(f"└- Training features...")
+        # start_time = time.time()
+        # await saga.train_features()
 
-        duration = time.time() - start_time
-        logging.info(f"└--- Features trained successfully in {duration:.2f} seconds")
+        # duration = time.time() - start_time
+        # logging.info(f"└--- Features trained successfully in {duration:.2f} seconds")
 
         # Upload result
         folder_url, _ = await asset.upload_folder("images", "saga")
@@ -410,6 +448,57 @@ async def process_saga(asset: Asset, saga: Saga):
     logging.info(f"└- SAGA processed successfully in {duration:.2f} seconds")
 
 
+async def segment_saga(asset: Asset, saga: Saga):
+    logging.info(f"Segmenting SAGA for asset {asset.asset_id}...")
+    start_start_time = time.time()
+
+    try:
+        # Extract features
+        logging.info(f"└- Segmenting...")
+        start_time = time.time()
+        await saga.segment()
+
+        if not asset.exists("features"):
+            raise SagaSegmentError("features/ not found")
+
+        duration = time.time() - start_time
+        logging.info(f"└--- Segmented successfully in {duration:.2f} seconds")
+
+        # Upload result
+        folder_url, _ = await asset.upload("images", "saga")
+        response = requests.patch(
+            f"{api_root}/assets/saga/{asset.asset_id}",
+            headers={"Content-Type": "application/json"},
+            data=json.dumps({"url": "/" + folder_url}),
+        )
+
+        if response.status_code != 200:
+            raise PatchError(response.reason)
+
+    except SagaSegmentError as e:
+        logging.error(f"└- Failed segmenting:")
+        logging.error(e.args[0])
+        raise Exception()
+
+    except SagaRenderError as e:
+        logging.error(f"└- Failed rendering:")
+        logging.error(e.args[0])
+        raise Exception()
+
+    except AssetUploadError as e:
+        logging.error(f"└- Failed uploading SAGA:")
+        logging.error(e.args[0])
+        raise Exception()
+
+    except Exception as e:
+        logging.error(f"└- Unknown error when processing SAGA:")
+        logging.error(str(e))
+        raise Exception()
+
+    duration = time.time() - start_start_time
+    logging.info(f"└- SAGA processed successfully in {duration:.2f} seconds")
+
+
 async def main():
     connection = await connect_robust(
         host=os.getenv("RABBITMQ_HOST"),
@@ -428,7 +517,7 @@ async def main():
     saga_queue = await channel.declare_queue(saga_queue_name, durable=True)
 
     await process_queue.consume(process_task)
-    await saga_queue.consume(lambda x: 1)
+    await saga_queue.consume(process_saga)
 
     try:
         logging.info("Listening for messages. Press CTRL+C to exit.")
