@@ -3,6 +3,7 @@ import os
 import requests
 import shutil
 import zipfile
+import logging
 
 from pathlib import Path
 from urllib import parse, request
@@ -103,6 +104,13 @@ class Asset:
     def __upload(self, source_path: str, target_path: str):
         source = os.path.join("assets", self.asset_id, source_path)
         with open(source, "rb") as file:
+
+            file_content = file.read()
+            if not file_content:
+                logging.info(f"File {source} is empty or could not be read.")
+            else:
+                logging.info(f"File {source} read successfully, size: {len(file_content)} bytes")
+
             files = {"file": (target_path, file)}
             data = {"folder": self.asset_id}
             return requests.post(f"{self.storage_root}/upload", data=data, files=files)
