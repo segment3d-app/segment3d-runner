@@ -3,6 +3,7 @@ import os
 import requests
 import shutil
 import zipfile
+import logging
 
 from pathlib import Path
 from urllib import parse, request
@@ -58,15 +59,20 @@ class Asset:
         upload_tasks = []
 
         source_folder_path = os.path.join(self.asset_path, source_folder)
-        for _, _, files in os.walk(source_folder_path):
+        for root, _, files in os.walk(source_folder_path):
             for file in files:
+                source_path = os.path.join(root, file)
                 relative_path = os.path.relpath(file, source_folder_path)
                 target_path = os.path.join(target_folder, relative_path).replace(
                     os.sep, "/"
                 )
 
+                logging.info(source_path)
+                logging.info(relative_path)
+                logging.info(target_path)
+
                 upload_tasks.append(
-                    loop.run_in_executor(None, self.__upload, file, target_path)
+                    loop.run_in_executor(None, self.__upload, source_path, target_path)
                 )
 
         responses = await asyncio.gather(*upload_tasks)
