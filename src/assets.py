@@ -1,5 +1,4 @@
 import asyncio
-import mimetypes
 import os
 import requests
 import shutil
@@ -96,9 +95,14 @@ class Asset:
 
     def __upload(self, source_path: str, target_path: str):
         source = os.path.join("assets", self.asset_id, source_path)
-        mime_type, _ = mimetypes.guess_type(source)
 
         with open(source, "rb") as file:
-            files = {"file": (target_path, file, mime_type)}
+            if source.endswith(".jpg") or source.endswith(".jpeg"):
+                files = {"file": (target_path, file, "image/jpeg")}
+            elif source.endswith(".png"):
+                files = {"file": (target_path, file, "image/png")}
+            else:
+                files = {"file": (target_path, file)}
+                
             data = {"folder": self.asset_id}
             return requests.post(f"{self.storage_root}/upload", data=data, files=files)
