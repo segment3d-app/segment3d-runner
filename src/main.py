@@ -86,7 +86,7 @@ async def process_task(message: AbstractIncomingMessage):
     # await message.ack()
 
 
-async def process_saga(message: AbstractIncomingMessage):
+async def process_query(message: AbstractIncomingMessage):
     logging.info("Received SAGA message:")
 
     # ==== Parse message and create model instances
@@ -513,11 +513,11 @@ async def main():
     process_queue_name = os.getenv("RABBITMQ_QUEUE_PROCESS")
     process_queue = await channel.declare_queue(process_queue_name, durable=True)
 
-    saga_queue_name = os.getenv("RABBITMQ_QUEUE_SAGA")
-    saga_queue = await channel.declare_queue(saga_queue_name, durable=True)
+    query_queue_name = os.getenv("RABBITMQ_QUEUE_SAGA")
+    query_queue = await channel.declare_queue(query_queue_name, durable=True)
 
     await process_queue.consume(process_task)
-    await saga_queue.consume(process_saga)
+    await query_queue.consume(process_query)
 
     try:
         logging.info("Listening for messages. Press CTRL+C to exit.")
