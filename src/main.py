@@ -363,45 +363,45 @@ async def process_saga(asset: Asset, saga: Saga):
 
     try:
         # Extract features
-        # logging.info(f"└- Extracting features...")
-        # start_time = time.time()
-        # await saga.extract_features()
+        logging.info(f"└- Extracting features...")
+        start_time = time.time()
+        await saga.extract_features()
 
-        # if not asset.exists("features"):
-        #     raise SagaExtractFeaturesError("features/ not found")
+        if not asset.exists("features"):
+            raise SagaExtractFeaturesError("features/ not found")
 
-        # duration = time.time() - start_time
-        # logging.info(f"└--- Features extracted successfully in {duration:.2f} seconds")
+        duration = time.time() - start_time
+        logging.info(f"└--- Features extracted successfully in {duration:.2f} seconds")
 
-        # # Extract masks
-        # logging.info(f"└- Extracting masks...")
-        # start_time = time.time()
-        # await saga.extract_masks()
+        # Extract masks
+        logging.info(f"└- Extracting masks...")
+        start_time = time.time()
+        await saga.extract_masks()
 
-        # if not asset.exists("sam_masks"):
-        #     raise SagaExtractMasksError("sam_masks/ not found")
+        if not asset.exists("sam_masks"):
+            raise SagaExtractMasksError("sam_masks/ not found")
 
-        # duration = time.time() - start_time
-        # logging.info(f"└--- Masks extracted successfully in {duration:.2f} seconds")
+        duration = time.time() - start_time
+        logging.info(f"└--- Masks extracted successfully in {duration:.2f} seconds")
 
-        # # Train scene
-        # logging.info(f"└- Training scene...")
-        # start_time = time.time()
-        # await saga.train_scene()
+        # Train scene
+        logging.info(f"└- Training scene...")
+        start_time = time.time()
+        await saga.train_scene()
 
-        # if not asset.exists("saga"):
-        #     raise SagaTrainSceneError("saga/ not found")
+        if not asset.exists("saga"):
+            raise SagaTrainSceneError("saga/ not found")
 
-        # duration = time.time() - start_time
-        # logging.info(f"└--- Scene trained successfully in {duration:.2f} seconds")
+        duration = time.time() - start_time
+        logging.info(f"└--- Scene trained successfully in {duration:.2f} seconds")
 
-        # # Train features
-        # logging.info(f"└- Training features...")
-        # start_time = time.time()
-        # await saga.train_features()
+        # Train features
+        logging.info(f"└- Training features...")
+        start_time = time.time()
+        await saga.train_features()
 
-        # duration = time.time() - start_time
-        # logging.info(f"└--- Features trained successfully in {duration:.2f} seconds")
+        duration = time.time() - start_time
+        logging.info(f"└--- Features trained successfully in {duration:.2f} seconds")
 
         # Upload result
         folder_url = await asset.upload_folder("images", "saga")
