@@ -94,12 +94,6 @@ class Asset:
         source = os.path.join("assets", self.asset_id, source_path)
 
         with open(source, "rb") as file:
-            if source.endswith(".jpg") or source.endswith(".jpeg"):
-                files = {"file": (target_path, file, "image/jpeg")}
-            elif source.endswith(".png"):
-                files = {"file": (target_path, file, "image/png")}
-            else:
-                files = {"file": (target_path, file)}
-                
+            files = {"file": (target_path, file)}    
             data = {"folder": self.asset_id}
             return requests.post(f"{self.storage_root}/upload", data=data, files=files)
