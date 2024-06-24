@@ -61,10 +61,7 @@ class Asset:
         for _, _, files in os.walk(source_folder_path):
             for file in files:
                 source_path = os.path.join(source_folder, file)
-                relative_path = os.path.relpath(file, source_folder_path)
-                target_path = os.path.join(target_folder, relative_path).replace(
-                    os.sep, "/"
-                )
+                target_path = f"{target_folder}/{file}"
 
                 response = await asyncio.get_event_loop().run_in_executor(
                     None, self.__upload, source_path, target_path
