@@ -61,10 +61,9 @@ class Asset:
         for _, _, files in os.walk(source_folder_path):
             for file in files:
                 source_path = os.path.join(source_folder, file)
-                target_path = f"{target_folder}/{file}"
 
                 response = await asyncio.get_event_loop().run_in_executor(
-                    None, self.__upload, source_path, target_path
+                    None, self.__upload, source_path, file, "saga"
                 )
 
                 if response.status_code != 200:
@@ -90,10 +89,14 @@ class Asset:
             zip_ref.extractall(self.dir_path)
         os.remove(self.zip_path)
 
-    def __upload(self, source_path: str, target_path: str):
+    def __upload(self, source_path: str, target_path: str, subfolder_path: str):
         source = os.path.join("assets", self.asset_id, source_path)
 
+        target = self.asset_id
+        if subfolder_path:
+            target += "/" + subfolder_path
+
         with open(source, "rb") as file:
-            files = {"file": (target_path, file)}    
-            data = {"folder": self.asset_id}
+            files = {"file": (target_path, file)}
+            data = {"folder": target}
             return requests.post(f"{self.storage_root}/upload", data=data, files=files)
