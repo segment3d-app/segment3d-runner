@@ -83,7 +83,7 @@ async def process_task(message: AbstractIncomingMessage):
         await message.nack()
 
     # asset.clear()
-    # await message.ack()
+    await message.ack()
 
 
 async def process_query(message: AbstractIncomingMessage):
