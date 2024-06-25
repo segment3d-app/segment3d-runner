@@ -78,12 +78,11 @@ async def process_task(message: AbstractIncomingMessage):
         # Process SAGA
         await process_saga(asset, saga)
 
+        await message.ack()
+
     except:
         logging.error("")
         await message.nack()
-
-    # asset.clear()
-    await message.ack()
 
 
 async def process_query(message: AbstractIncomingMessage):
@@ -108,10 +107,10 @@ async def process_query(message: AbstractIncomingMessage):
 
     saga = Saga(asset_id=asset.asset_id, asset_type="lidar")
 
-    segment_id = data['unique_identifier']
-    photo_url = data['url']
-    x = data['x']
-    y = data['y']
+    segment_id = data["unique_identifier"]
+    photo_url = data["url"]
+    x = data["x"]
+    y = data["y"]
 
     try:
         # Segment SAGA
