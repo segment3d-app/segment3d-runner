@@ -89,7 +89,7 @@ class Asset:
             zip_ref.extractall(self.dir_path)
         os.remove(self.zip_path)
 
-    def __upload(self, source_path: str, target_path: str, subfolder_path: str | None):
+    def __upload(self, source_path: str, target_path: str, subfolder_path: str = None):
         source = os.path.join("assets", self.asset_id, source_path)
 
         target = self.asset_id
