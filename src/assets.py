@@ -1,4 +1,5 @@
 import asyncio
+import json
 import os
 import requests
 import shutil
@@ -37,6 +38,11 @@ class Asset:
 
     def exists(self, path: str):
         return Path(self.asset_path, path).exists()
+    
+    def read_json(self, path: str):
+        with open(os.path.join(self.asset_path, path), 'r') as file:
+            data = json.load(file)
+            return data
 
     async def download(self):
         await asyncio.get_event_loop().run_in_executor(None, self.__download_images)

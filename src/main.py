@@ -108,13 +108,15 @@ async def process_query(message: AbstractIncomingMessage):
     saga = Saga(asset_id=asset.asset_id, asset_type="lidar")
 
     segment_id = data["unique_identifier"]
-    photo_url = data["url"]
+    image_url = data["url"]
     x = data["x"]
     y = data["y"]
 
+    image_name = image_url.split("/")[-1].split(".")[0]
+
     try:
         # Segment SAGA
-        await process_saga(asset, saga)
+        await segment_saga(asset, saga, segment_id, image_name, x, y)
 
     except:
         logging.error("")
@@ -447,32 +449,53 @@ async def process_saga(asset: Asset, saga: Saga):
     logging.info(f"└- SAGA processed successfully in {duration:.2f} seconds")
 
 
-async def segment_saga(asset: Asset, saga: Saga):
+async def segment_saga(
+    asset: Asset, saga: Saga, segment_id: str, image_name: str, x: int, y: int
+):
     logging.info(f"Segmenting SAGA for asset {asset.asset_id}...")
     start_start_time = time.time()
 
     try:
+        if not asset.exists("saga/cameras.json"):
+            raise Exception("saga/cameras.json not found")
+
+        cameras = asset.read_json("saga/cameras.json")
+        for camera in cameras:
+            if camera["img_name"] == image_name:
+                image_index = camera["id"]
+                break
+        else:
+            raise Exception("Image name not found")
+
         # Extract features
         logging.info(f"└- Segmenting...")
         start_time = time.time()
-        await saga.segment()
+        await saga.segment(segment_id, image_index, 1, x, y)
 
-        if not asset.exists("features"):
-            raise SagaSegmentError("features/ not found")
+        if not asset.exists(f"saga/segmentation/{segment_id}"):
+            raise SagaSegmentError(f"saga/segmentation/{segment_id} not found")
 
         duration = time.time() - start_time
         logging.info(f"└--- Segmented successfully in {duration:.2f} seconds")
 
-        # Upload result
-        folder_url, _ = await asset.upload("images", "saga")
-        response = requests.patch(
-            f"{api_root}/assets/saga/{asset.asset_id}",
-            headers={"Content-Type": "application/json"},
-            data=json.dumps({"url": "/" + folder_url}),
-        )
+        # Render masks
+        logging.info(f"└- Rendering...")
+        start_time = time.time()
+        await saga.render(segment_id)
 
-        if response.status_code != 200:
-            raise PatchError(response.reason)
+        if not asset.exists(
+            "saga/point_cloud/iteration_7000/segmentation/segmentation_seg_no_mask_point_cloud.ply"
+        ):
+            raise SagaRenderError("segmentation_seg_no_mask_point_cloud.ply not found")
+
+        duration = time.time() - start_time
+        logging.info(f"└--- Rendered successfully in {duration:.2f} seconds")
+
+        # Upload result
+        await asset.upload(
+            "saga/point_cloud/iteration_7000/segmentation/segmentation_seg_no_mask_point_cloud.ply",
+            f"{segment_id}.ply",
+        )
 
     except SagaSegmentError as e:
         logging.error(f"└- Failed segmenting:")
