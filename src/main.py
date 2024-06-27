@@ -123,6 +123,8 @@ async def process_query(message: AbstractIncomingMessage):
         # Segment SAGA
         await segment_saga(asset, saga, segment_id, image_name, x, y)
 
+        await message.ack()
+
     except:
         logging.error("")
         await message.nack()

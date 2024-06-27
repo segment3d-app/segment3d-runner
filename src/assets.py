@@ -99,7 +99,7 @@ class Asset:
         source = os.path.join("assets", self.asset_id, source_path)
 
         target = self.asset_id
-        if subfolder_path:
+        if subfolder_path is not None:
             target += "/" + subfolder_path
 
         with open(source, "rb") as file:
