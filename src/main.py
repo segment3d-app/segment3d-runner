@@ -6,6 +6,7 @@ import requests
 import time
 
 from dotenv import load_dotenv
+from pathlib import Path
 
 from aio_pika import connect_robust
 from aio_pika.abc import AbstractIncomingMessage
@@ -97,6 +98,10 @@ async def process_query(message: AbstractIncomingMessage):
     logging.info(f"└- Photo URL: {data['url']}")
     logging.info(f"└- X coordinate: {data['x']}")
     logging.info(f"└- Y coordinate: {data['y']}")
+
+    if not Path("assets", data['asset_id']).exists():
+        await message.nack()
+        return
 
     asset = Asset(
         storage_root=storage_root,
