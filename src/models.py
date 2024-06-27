@@ -310,13 +310,11 @@ class Saga(Model):
             --image_root {self.asset_path}
             --mask_idx {mask_index}
             --image_idx {image_index}
-            --object "{segment_id}"
-            --target_coord "[[{x}, {y}]]"
+            --object '{segment_id}'
+            --target_coord '[[{x}, {y}]]'
             --model_path {os.path.join(self.asset_path, "saga")}
             --iterations 7000
         """
-
-# python models/saga/prompt_segmenting.py --sam_checkpoint_path models/saga/sam.pth --image_root assets/403a4bbc-c7da-4546-a7a2-f7a29f22a012 --mask_idx 2 --image_idx 1 --object "aaa" --target_coord "[[300, 300]]" --iterations 7000 --model_path assets/403a4bbc-c7da-4546-a7a2-f7a29f22a012/saga
 
         process = self.run_command(command)
         if process.returncode != 0:
@@ -328,10 +326,7 @@ class Saga(Model):
             --precomputed_mask {os.path.join(self.asset_path, "saga/segmentation", segment_id, "final_mask.pt")}
             --target scene
             --segment
-            --iterations 7000
         """
-
-# python models/saga/render.py --m assets/403a4bbc-c7da-4546-a7a2-f7a29f22a012/saga --precomputed_mask assets/403a4bbc-c7da-4546-a7a2-f7a29f22a012/saga/segmentation/aaa/final_mask.pt --target scene --segment
 
         process = self.run_command(command)
         if process.returncode != 0:
