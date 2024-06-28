@@ -35,6 +35,8 @@ class Asset:
         if pcl_path is not None:
             self.pcl_url = f"{storage_root}{parse.quote(pcl_path)}?isDownload=true"
             self.pcl_path = f"{self.asset_path}/input/lidar.ply"
+        else:
+            self.pcl_url = None
 
     def exists(self, path: str):
         return Path(self.asset_path, path).exists()
